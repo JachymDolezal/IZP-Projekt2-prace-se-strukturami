@@ -1,0 +1,23 @@
+
+Steps programu
+
+1. kontrola argumentu
+2. nacteni souboru
+3. malloc pro obsah souboru
+4. kontrola souboru
+5. ulozeni typu:
+    - univerzum
+    - mnoziny/relace
+    - funkce
+6. provedení funkcí na množinách/relacích
+7. prislusny tisk vysledku funkce
+8. ukončení programu
+
+
+Tips
+
+- pouzit malloc pro cely file
+    - uvolnit pri erroru/konci programu
+- indexovat si univerzum
+- univerzum je na jeden radek
+- pouzit getc pro parserovani
