@@ -21,3 +21,37 @@ Tips
 - indexovat si univerzum
 - univerzum je na jeden radek
 - pouzit getc pro parserovani
+
+
+10/11/2021
+==========
+
+definice
+--------
+
+musime udelat array pro univerzum
+
+Array[pocet elementu] -> [int index, str element]
+
+array mnozin
+
+mnozin Array[pocet mnozin] -> [int index, array[prvky]]
+
+array relaci 
+
+Array[pocet relaci] -> [int index, [prvek1, prvek2]]
+
+funkce
+------
+
+vstup 2/1 set/relace
+
+vystup relace/bool
+
+
+postup alokace
+--------------
+
+jelikoz nevime jak je dlouhy radek a pocet prvku dopredu tak to musime spocitat a alokovat pamet 
+
+array pres pointer???
