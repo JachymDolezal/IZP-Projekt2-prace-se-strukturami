@@ -141,7 +141,7 @@ int main(int argc, char **argv){
         fclose(file);
         return -1;
     }
-    char temp_univerzum[10]; //todo
+    char temp_univerzum[counter]; //todo
     fgets(temp_univerzum,line_length,file);
 
     Univerzum univerzum[12]; //todo
@@ -165,7 +165,7 @@ int main(int argc, char **argv){
 
     /*
     1. funcke ktera zisti pocet prvku unvierza + checkne dlzku prvku
-    2. ak 1. returne 1(true) mozem ukladat prvky do arrayu struktury Univerzum
+    2. ak 1. ret    urne 1(true) mozem ukladat prvky do arrayu struktury Univerzum
          2.1 array bude mat tvar Univerzum array[counter] = { {0, "prvniprvek"},{1,"druhyprvek"},{...},... }
          
     u hesllo hesllo hello 
