@@ -148,18 +148,8 @@ int main(int argc, char **argv){
 
     convert_to_index(temp_univerzum,&univerzum,counter);
 
-    /*
-    if(load_universum(file,30,&counter)){
-        printf("universum is valid and has: %d elements\n",counter);
-        printf("len of universum is: %d\n", line_len());
-    }
-    else{
-        printf("universum is not valid\n");
-        return -1;
-    }
-    Univerzum uni[counter];
-
-    */
+    
+    //Univerzum uni[counter];
     
 
 
