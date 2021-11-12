@@ -46,18 +46,19 @@ int line_check(FILE *file, int *counter, int *line_length){
     return 1;
 }
 
-void convert_to_index(char * str,int num_of_elements, Univerzum *univerzum[]){
+void convert_to_index(char * str,int num_of_elements, Univerzum **univerzum){
     int index = 0;
     int i = 2;
     // Univerzum ptr->univerzum[num_of_elements];
     while(str[i] != '\n'){
 
-    // univerzum[index].pozice = index;
-    // univerzum[index].element[i] = str[i];
+    (*univerzum[index]).pozice = index;
+    (*univerzum[index]).element[i] = str[i];
 
     if(str[i] == ' '){
         index++;
     }
+
     if(index >= num_of_elements-1){
         break;
     }
@@ -121,7 +122,6 @@ int test;
 
 int main(int argc, char **argv){
     printf("num of arguments %d, name of txt: %s\n",argc,argv[1]);
-    Univerzum *univerzum;
     FILE *file;
     char *filename = argv[1];
     int counter = 0;
@@ -141,12 +141,13 @@ int main(int argc, char **argv){
         fclose(file);
         return -1;
     }
+    
     char temp_univerzum[counter]; //todo
     fgets(temp_univerzum,line_length,file);
 
-    Univerzum univerzum[12]; //todo
-
-    convert_to_index(temp_univerzum,&univerzum,counter);
+    //Univerzum univerzum[12]; //todo
+    Univerzum *univerzum[counter];
+    convert_to_index(temp_univerzum,counter,univerzum);
 
     
     //Univerzum uni[counter];
