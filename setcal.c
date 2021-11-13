@@ -75,7 +75,6 @@ int universum_check(FILE *file, int *counter, int *line_length, Universum *u){
             (*counter)++;
             idx++;
         }
-
     }
     u[idx].element[element_len+1] = '\0';
     return 1;
@@ -191,31 +190,7 @@ int test;
 int main(int argc, char **argv){
 
     printf("num of arguments %d, name of txt: %s\n",argc,argv[1]);
-
-//     Set universum[] = {{0,"h"},{1,"b"},{2,"c"},{3,"d"}};
-
-//     // S h c d b 
-//     // [0,2,1,3]
-
-    
-//     mnozina set[] = { {4,{1,2,3,4}}, // 0.prvek -> s>1. radek
-//                     {5,{1,2,3,5,6}},
-//                     {3,{1,2,3}},
-//                     {4,{1,2,3,4}},
-//                     };
-    
-//     free(set[0])
-// //     typedef struct{
-
-
-//      int size;
-//      int *items;
-
-//      } vector_t;
-
-    // v->items = malloc(size * sizeof(int));
-
-    Universum u[3];
+    Main m;
     FILE *file;
     char *filename = argv[1];
     int counter = 0;
@@ -227,7 +202,7 @@ int main(int argc, char **argv){
         return -1;
     }
 
-     if (universum_check(file, &counter, &line_length,u)){
+     if (universum_check(file, &counter, &line_length,&m.u)){
         printf("universum is valid and has:\n %d elements\nand line_len is: %d", counter, line_length);
     }
     else{
@@ -235,7 +210,7 @@ int main(int argc, char **argv){
         fclose(file);
         return -1;
     }
-    if (universum_check(file, &counter, &line_length,u)){
+    if (universum_check(file, &counter, &line_length,&m.u)){
         printf("universum is valid and has:\n %d elements\nand line_len is: %d", counter, line_length);
     }
     else{
@@ -245,18 +220,8 @@ int main(int argc, char **argv){
     }
     // convert_to_index(temp_univerzum,&univerzum,counter);
 
-    /*
-    if(load_universum(file,30,&counter)){
-        printf("universum is valid and has: %d elements\n",counter);
-        printf("len of universum is: %d\n", line_len());
-    }
-    else{
-        printf("universum is not valid\n");
-        return -1;
-    }
-    Univerzum uni[counter];
-
-    */
+    
+    //Univerzum uni[counter];
     
 
 
