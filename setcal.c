@@ -6,11 +6,10 @@
 
 //Structure for the universum and set.
 typedef struct {
-    char *element;
+    char element[31];
 } Universum;
 
 typedef struct {
-    int size;
     int *set;
 } Set;
 
@@ -220,17 +219,17 @@ int main(int argc, char **argv){
     }
     // convert_to_index(temp_univerzum,&univerzum,counter);
 
-    
+
     //Univerzum uni[counter];
-    
+
 
 
     /*
     1. funcke ktera zisti pocet prvku unvierza + checkne dlzku prvku
     2. ak 1. ret    urne 1(true) mozem ukladat prvky do arrayu struktury Univerzum
          2.1 array bude mat tvar Univerzum array[counter] = { {0, "prvniprvek"},{1,"druhyprvek"},{...},... }
-         
-    u hesllo hesllo hello 
+
+    u hesllo hesllo hello
     */
 
 
