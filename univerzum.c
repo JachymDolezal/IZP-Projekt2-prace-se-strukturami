@@ -2,11 +2,9 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-#define SIZE 8
-
 typedef struct {
     //int index;
-    char element[6];
+    char element[31];
 } Universum;
 
 //TODO - dat inkrementaci na konec
@@ -63,7 +61,7 @@ int universum_check(FILE *file, int *counter, int *line_length, Universum *u){
 int main(int argc, char **argv){
 
     printf("num of arguments %d, name of txt: %s\n",argc,argv[1]);
-    Universum u[SIZE];
+    Universum *u;
 
     /*
     u[0] = {1, "heslo"}
@@ -84,6 +82,14 @@ int main(int argc, char **argv){
         fclose(file);
         return -1;
     }
+    printf("OK\n");
+    u = malloc(100 * sizeof(int));
+    if(u == NULL){
+        fprintf(stderr,"Memory not allocated");
+        return -1;
+    }
+    printf("OKe\n");
+
 
     if (universum_check(file, &counter, &line_length,u)){
         printf("universum is valid and has:\n %d elements\nand line_len is: %d\n", counter, line_length);
@@ -94,12 +100,12 @@ int main(int argc, char **argv){
         return -1;
     }
     printf("\n");
-    for(int i = 0; i < SIZE; i++){
+    for(int i = 0; i < counter; i++){
 
         printf("%s\n",u[i].element);
     }
     // printf("%s\n",u[2].element);
-
+    free(u);
     fclose(file);
     return 0;
 }
