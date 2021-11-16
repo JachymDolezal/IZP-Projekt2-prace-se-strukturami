@@ -76,14 +76,19 @@ Done
 - convert index to set DONE
 - Malloc pro struct set/ univerzum DONE
 - prvky o len 1 v Univerzum a setu DONE
+- Malloc pro vnoreny struct pro set DONE
+
+Main
+----
+
+- udelat main logiku
+
 
 Sets + malloc
 --------------
-- Malloc pro vnoreny struct pro set
-- Free funkce
+
 - Pocitani tot pameti a volne pameti
 - Realokace
-- free pameti
 
 Relace + malloc
 ----------------
