@@ -9,11 +9,12 @@ typedef struct {
 } Universum;
 
 typedef struct {
-    int set[3];
+    int *set;
+    int cardinality;
 } Set;
 
 
-int convert_to_index(FILE *file, Set *s, Universum *u, int uni_element){
+int set_to_index(FILE *file, Set *s, Universum *u, int uni_element){
 
     //get element in temp
     //compare with uni
@@ -22,6 +23,14 @@ int convert_to_index(FILE *file, Set *s, Universum *u, int uni_element){
     int index = 0;
     int element_index = 0;
     bool was_found = false;
+    s->cardinality = 0;
+
+    //Malloc pro jeden radek
+    s->set = malloc(50 * sizeof(int));
+    if(s->set == NULL){
+        fprintf(stderr,"memory could not be allocated");
+        return false;
+    }
 
     //TODO udelat separatni funkci
     char character = 'd';
@@ -35,12 +44,16 @@ int convert_to_index(FILE *file, Set *s, Universum *u, int uni_element){
         character = getc(file);
 
         if (character == ' ' || character == '\n' || character == EOF) {
-            temp[index+1] = '\0';
+            temp[index] = '\0';
+            printf("temp str: %s\n",temp);
             index = 0;
+            (s->cardinality)++;
             for (int j = 0; j < uni_element; j++){
 
                 if (strcmp(temp, u[j].element) == 0){
+                    printf("j\n");
                     s->set[element_index] = j;
+                    printf("elementindex :%d\n",s->set[element_index]);
                     //expression must have struct or union type but it has type "Set *
                     element_index++;
                     was_found = true;
@@ -48,7 +61,7 @@ int convert_to_index(FILE *file, Set *s, Universum *u, int uni_element){
                 }
             }
             if (!was_found){
-                fprintf(stderr, "Prvek neni z univerza");
+                fprintf(stderr, "Prvek neni z univerza\n");
                 return false;
             }
             //empties a the temp string
@@ -61,12 +74,22 @@ int convert_to_index(FILE *file, Set *s, Universum *u, int uni_element){
     }
     return 1;
 }
-/*
-U jablka hrusky tresne jahody broskve maliny\n
-S hrusky jablka tresne\n// => [1,0,2]
-    1       0       2
 
-*/
+//TODO - zmenit pro n setu
+void index_to_set(Set *s, Universum *u){
+
+    //start of the line
+    printf("S");
+
+    for (int i = 0; i < s->cardinality; i++){
+        printf(" ");
+        printf("%s",u[s->set[i]].element);
+    }
+    printf("\n");
+
+// [5,0,4]
+}
+
 //TODO - dat inkrementaci na konec
 int universum_check(FILE *file, int *counter, int *line_length, Universum *u){
 
@@ -81,8 +104,7 @@ int universum_check(FILE *file, int *counter, int *line_length, Universum *u){
     //loop zacina uz na 2. index na radku, pretoze uz dva getc() byli
     // character = getc(file);
     // printf("character: %c\n",character);
-    if (character != '\n') // uplne nahodou ak je prazdne univerzum U tak aby nevyhodil counter = 1 a pritom tam nejsou prvky..(ani nevim zda muze byt prazdny)
-        (*counter)++;
+
 
 
     //loop for the univerzum TODO hodit na while a EOF nebude!!!!
@@ -114,9 +136,44 @@ int universum_check(FILE *file, int *counter, int *line_length, Universum *u){
         }
 
     }
+    if (character != '\n') // uplne nahodou ak je prazdne univerzum U tak aby nevyhodil counter = 1 a pritom tam nejsou prvky..(ani nevim zda muze byt prazdny)
+        (*counter)++;
     u[idx].element[element_len+1] = '\0';
     return 1;
 }
+// int malloc_structs(Set *s, Universum *u){
+//     //malloc pro univerzum
+
+
+//     return 0;
+// }
+
+
+    /*
+    malloc_structs(){
+    1. malloc -> u (done)
+    2. malloc -> 1000 radku * const = sizeof(set struct) 100 * 12 = 12000 bytes s[n radku] (done)
+    }
+    **funkce**
+    3. malloc -> pro kazdy set struct 100 v radku 100 * sizeof(int) = 400 bytes  * 100 || loop(n krat) => s[n]->set malloc(400 bytes)
+
+    tot memory allocated = 10 000 bytes
+
+    kazdy zapis bude odecten z tot memory allocated
+
+
+    free(){
+        free(main)
+
+        1. m.u
+        2. m.s[n].set
+        3. m.r[r].r[2]
+
+    **potom**
+
+    malloc na relace
+
+    */
 
 int main(int argc, char **argv){
 
@@ -143,14 +200,37 @@ int main(int argc, char **argv){
         fclose(file);
         return -1;
     }
-    //malloc
+    // if(malloc_structs(s,u) == false){
+    //     return EXIT_FAILURE;
+    // }
     u = malloc(100 * sizeof(int));
-    s = malloc(100 * sizeof(int));
-
-    if(u == NULL){
-        fprintf(stderr,"Memory not allocated");
-        return -1;
+    if (u == NULL){
+        fprintf(stderr,"memory allocation was not possible.");
+        return false;
     }
+    //maloc pro set
+    s = malloc(100 * sizeof(int));
+    if (s == NULL){
+        fprintf(stderr,"memory allocation was not possible.");
+        return false;
+    }
+    // u = malloc(1000 * sizeof(char));
+    // if (u == NULL){
+    //     fprintf(stderr,"memory allocation was not possible.");
+    //     return false;
+    // }
+    // //maloc pro set
+    // s = malloc(1000 * sizeof(int));
+    // if (s == NULL){
+    //     fprintf(stderr,"memory allocation was not possible.");
+    //     return false;
+    // }
+    //maloc pro set
+    // s->set = malloc(100 * sizeof(int));
+    // if (s->set == NULL){
+    //     fprintf(stderr,"memory allocation was not possible.");
+    //     return EXIT_FAILURE;
+    // }
 
     if (universum_check(file, &counter, &line_length,u)){
         printf("universum is valid and has:\n %d elements\nand line_len is: %d\n", counter, line_length);
@@ -160,26 +240,30 @@ int main(int argc, char **argv){
         fclose(file);
         return -1;
     }
-    if(convert_to_index(file,s,u,counter)){
+    if(set_to_index(file,s,u,counter)){
         printf("sucess\n");
     }
     else{
         printf("fail\n");
+        return EXIT_FAILURE;
     }
     printf("\n");
+    printf("\nelementy univerza:\n");
     for(int i = 0; i < counter; i++){
-        printf("\nelementy univerza:\n");
         printf("%s\n",u[i].element);
     }
     // printf("%s\n",u[2].element);
     printf("set: \n");
-    for(int i = 0; i < 3 ;i++){
+    for(int i = 0; i < s->cardinality ;i++){
         printf("set:[%d] = %d \n", i, s->set[i]);
     }
 
+    index_to_set(s, u);
+
     //free
-    free(u);
+    free(s->set);
     free(s);
+    free(u);
 
     fclose(file);
     return 0;

@@ -55,3 +55,60 @@ postup alokace
 jelikoz nevime jak je dlouhy radek a pocet prvku dopredu tak to musime spocitat a alokovat pamet 
 
 array pres pointer???
+
+
+TODO pro projekt
+================
+
+FIX
+---
+
+
+prvky v univerzu
+
+
+Done
+----
+
+- struct DONE
+- nacteni univerza DONE
+- convert Set to index DONE
+- convert index to set DONE
+- Malloc pro struct set/ univerzum DONE
+- prvky o len 1 v Univerzum a setu DONE
+
+Sets + malloc
+--------------
+- Malloc pro vnoreny struct pro set
+- Free funkce
+- Pocitani tot pameti a volne pameti
+- Realokace
+- free pameti
+
+Relace + malloc
+----------------
+- nacitani relaci to index
+- index to relace output
+- malloc pro relaci
+- malloc pro vnoreny array relaci
+- realokace relace
+- uvolneni pameti relace
+
+- nacitani radku funkci
+
+
+Funkce pro sets
+---------------
+- funkce union
+    .
+    .
+    .
+- posledni funkce
+
+Funkce pro relace
+-----------------
+- funkce pro relaci
+    .
+    .
+    .
+- polsedni funkce
