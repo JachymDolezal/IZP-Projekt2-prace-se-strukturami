@@ -1,35 +1,95 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
-#include <stdlib.h>
-#define ELEMENT_SIZE 30
 
-//Structure for the universum and set.
 typedef struct {
+    //int index;
     char element[31];
 } Universum;
 
 typedef struct {
     int *set;
+    int cardinality;
 } Set;
 
-typedef struct {
-    int first_element;
-    int second_element;
-} Relations;
 
-typedef struct{
-    Universum *u;
-    Set *s;
-    Relations *s;
-} Main;
+int set_to_index(FILE *file, Set *s, Universum *u, int uni_element){
 
-bool argument_check(){
-//todo
-return 0;
+    //get element in temp
+    //compare with uni
+    //if found -> put indx in Set *s
+    char temp[31];
+    int index = 0;
+    int element_index = 0;
+    bool was_found = false;
+    s->cardinality = 0;
+
+    //Malloc pro jeden radek
+    s->set = malloc(50 * sizeof(int));
+    if(s->set == NULL){
+        fprintf(stderr,"memory could not be allocated");
+        return false;
+    }
+
+    //TODO udelat separatni funkci
+    char character = 'd';
+    if (getc(file) != 'S' || getc(file) != ' '){
+        fprintf(stderr, "Set is not defined");
+        return false;
+    }
+
+    while(character != '\n' && character != EOF){
+        //goes to a new character
+        character = getc(file);
+
+        if (character == ' ' || character == '\n' || character == EOF) {
+            temp[index] = '\0';
+            printf("temp str: %s\n",temp);
+            index = 0;
+            (s->cardinality)++;
+            for (int j = 0; j < uni_element; j++){
+
+                if (strcmp(temp, u[j].element) == 0){
+                    printf("j\n");
+                    s->set[element_index] = j;
+                    printf("elementindex :%d\n",s->set[element_index]);
+                    //expression must have struct or union type but it has type "Set *
+                    element_index++;
+                    was_found = true;
+                    break;
+                }
+            }
+            if (!was_found){
+                fprintf(stderr, "Prvek neni z univerza\n");
+                return false;
+            }
+            //empties a the temp string
+            strcpy(temp,"");
+            continue;
+        }
+        temp[index] = character;
+        index++;
+    }
+    return 1;
 }
 
-//
+//TODO - zmenit pro n setu
+void index_to_set(Set *s, Universum *u){
+
+    //start of the line
+    printf("S");
+
+    for (int i = 0; i < s->cardinality; i++){
+        printf(" ");
+        printf("%s",u[s->set[i]].element);
+    }
+    printf("\n");
+
+// [5,0,4]
+}
+
+//TODO - dat inkrementaci na konec
 int universum_check(FILE *file, int *counter, int *line_length, Universum *u){
 
     int element_len = 0;
@@ -39,15 +99,10 @@ int universum_check(FILE *file, int *counter, int *line_length, Universum *u){
         fprintf(stderr, "Universum not defined");
         return -1;
     }
-
     //loop zacina uz na 2. index na radku, pretoze uz dva getc() byli
     // character = getc(file);
     // printf("character: %c\n",character);
-    if (character != '\n') // uplne nahodou ak je prazdne univerzum U tak aby nevyhodil counter = 1 a pritom tam nejsou prvky..(ani nevim zda muze byt prazdny)
-        (*counter)++;
-
-
-    //loop for the univerzum
+    //loop for the univerzum TODO hodit na while a EOF nebude!!!!
     for(int i = 0; character != '\n' && character != EOF; i++){
         if (element_len > 30){
             fprintf(stderr, "prvek longer than 30 chars...");
@@ -59,13 +114,11 @@ int universum_check(FILE *file, int *counter, int *line_length, Universum *u){
     if (character != ' '){
         u[idx].element[element_len] = character;
     }
-
     // printf("idx: %d character: %c element_len: %d\n",idx, character, element_len);
-
     element_len++;
     (*line_length)++;
 
-        if (character == ' '){
+        if (character == ' ' || character == '\n' || character == EOF){
            // u[idx].index = idx;
         //    printf("element_len: %d\n", element_len);
         //    printf("element_len 0: %d\n",element_len);
@@ -75,180 +128,152 @@ int universum_check(FILE *file, int *counter, int *line_length, Universum *u){
             idx++;
         }
     }
+    if (character != '\n') // uplne nahodou ak je prazdne univerzum U tak aby nevyhodil counter = 1 a pritom tam nejsou prvky..(ani nevim zda muze byt prazdny)
+        (*counter)++;
     u[idx].element[element_len+1] = '\0';
     return 1;
 }
-/*
-U 123 hello abcd\n
-
-index = 0;
-element[0] = 1
-element[1] = 2
-element[2] = 3
-element[3] = '\0'
-index = 1;
-element[0] =
-
-pointer* = malloc( 31 * sizeof(str) + sizeof(int))
-for()
-pointer* = realloc(hello numofchars* sizeof(str) + sizeof(int))
-
-
-
-
-txt
------------
-U hello hi wassup\n
-adsfadsf\n
-adfadsfa\n
-----------
-*/
-
-// void convert_to_index(char * str,int num_of_elements, Univerzum *univerzum[]){
-//     int index = 0;
-//     int i = 2;
-//     // Univerzum ptr->univerzum[num_of_elements];
-//     while(str[i] != '\n'){
-
-//     // univerzum[index].pozice = index;
-//     // univerzum[index].element[i] = str[i];
-
-//     if(str[i] == ' '){
-//         index++;
+// int malloc_structs(Set *s, Universum *u){
+//     //malloc pro univerzum
+//     u = malloc(100 * sizeof(int));
+//     if (u == NULL){
+//         fprintf(stderr,"memory allocation was not possible.");
+//         return false;
 //     }
-//     if(index >= num_of_elements-1){
-//         break;
+//     //maloc pro set
+//     s = malloc(100 * sizeof(int));
+//     if (s == NULL){
+//         fprintf(stderr,"memory allocation was not possible.");
+//         return false;
 //     }
-//     i++;
-//     index++;
-//     }
-// }
-
-
-// void convert_from_index(){
 //     return 0;
 // }
+// udelat to aby to vracelo pointer
 
+    /*
+    malloc_structs(){
+    1. malloc -> u (done)
+    2. malloc -> 1000 radku * const = sizeof(set struct) 100 * 12 = 12000 bytes s[n radku] (done)
+    }
+    **funkce**
+    3. malloc -> pro kazdy set struct 100 v radku 100 * sizeof(int) = 400 bytes  * 100 || loop(n krat) => s[n]->set malloc(400 bytes)
 
-// void file_opener(){
-// //todo
-// }
+    tot memory allocated = 10 000 bytes
 
-// void my_malloc(){
-// //todo
-// }
+    kazdy zapis bude odecten z tot memory allocated
 
-// bool file_check(){
-// //todo
-// }
+    free(){
+        free(main)
 
-// void line_parser(){
-// //todo
-// }
+        1. m.u
+        2. m.s[n].set
+        3. m.r[r].r[2]
 
-// // N funkci pro operaci kde je output struktura
-// void func1_N(){
-// //todo
-// }
+    **potom**
+    malloc na relace
 
-// // N funkci kde je vystup bool hodnota
-// bool func_bool(){
-// //todo
-// }
-
-// //prints output of a bool function
-// void bool_print(){
-// //todo
-// }
-
-// //outputs relation
-// void relation_print(){
-// //todo
-// }
-
-// // outputs set
-// void set_print(){
-// //todo
-// }
-
-typedef struct {
-// nejak zakomponovat struktury do relací/mnozin
-// pole indexu univerza??
-int test;
-} Struktura;
-
-
- /* reference pro prace se struktury s pointery */
-    // void func(Set *u){
-    //     u->size = NULL;
-    //     return 0;
-    // }
-
-    // func(&universum);
-
+    */
 int main(int argc, char **argv){
 
     printf("num of arguments %d, name of txt: %s\n",argc,argv[1]);
-    Main m;
+    Universum *u;
+    Set *s;
+
+    /*
+    u[0] = {1, "heslo"}
+    u[0].index = 1
+    u[0].elements[0] = 'h'
+    heslo
+    */
+// operator -> or ->* applied to "Universum" instead of to a pointer type
+// set.items[j] == relation[i].first
     FILE *file;
     char *filename = argv[1];
     int counter = 0;
     int line_length = 0;
     file = fopen(filename, "r");
+
     if(file == NULL){
         fprintf(stderr,"This file name is invalid.");
         fclose(file);
         return -1;
     }
+    // if(malloc_structs(s,u) == false){
+    //     return EXIT_FAILURE;
+    // }
+    u = malloc(100 * sizeof(u));
+    if (u == NULL){
+        fprintf(stderr,"memory allocation was not possible.");
+        return false;
+    }
+    //maloc pro set
+    s = malloc(100 * sizeof(s));
+    if (s == NULL){
+        fprintf(stderr,"memory allocation was not possible.");
+        return false;
+    }
+    //maloc pro set
+    // s->set = malloc(100 * sizeof(int));
+    // if (s->set == NULL){
+    //     fprintf(stderr,"memory allocation was not possible.");
+    //     return EXIT_FAILURE;
+    // }
 
-     if (universum_check(file, &counter, &line_length,&m.u)){
-        printf("universum is valid and has:\n %d elements\nand line_len is: %d", counter, line_length);
+    /*
+    plan pro main
+    Variables
+    File
+    Malloc
+
+    - Universum parser
+    - check if universum has unique elements
+
+    while(not eof){
+        decides with what letter the new line starts and checks if it is valid (S/R/C)
+        -Set parser
+        -Relation parser
+        -function parser
+            -does function
+            -outputs set/true,false
+    }
+    free memory
+    closes the file
+    return 0;
+
+    */
+
+    if(universum_check(file, &counter, &line_length,u)){
+        printf("universum is valid and has:\n %d elements\nand line_len is: %d\n", counter, line_length);
     }
     else{
         printf("universum smrdi");
         fclose(file);
         return -1;
     }
-    if (universum_check(file, &counter, &line_length,&m.u)){
-        printf("universum is valid and has:\n %d elements\nand line_len is: %d", counter, line_length);
+    if(set_to_index(file,s,u,counter)){
+        printf("sucess\n");
     }
     else{
-        printf("universum smrdi");
-        fclose(file);
-        return -1;
+        printf("fail\n");
+        return EXIT_FAILURE;
     }
-    // convert_to_index(temp_univerzum,&univerzum,counter);
+    printf("\n");
+    printf("\nelementy univerza: \n");
+    for(int i = 0; i < counter; i++){
+        printf("%s\n",u[i].element);
+    }
+    // printf("%s\n",u[2].element);
+    printf("set: \n");
+    for(int i = 0; i < s->cardinality ;i++){
+        printf("set:[%d] = %d \n", i, s->set[i]);
+    }
 
+    index_to_set(s, u);
 
-    //Univerzum uni[counter];
-
-
-
-    /*
-    1. funcke ktera zisti pocet prvku unvierza + checkne dlzku prvku
-    2. ak 1. ret    urne 1(true) mozem ukladat prvky do arrayu struktury Univerzum
-         2.1 array bude mat tvar Univerzum array[counter] = { {0, "prvniprvek"},{1,"druhyprvek"},{...},... }
-
-    u hesllo hesllo hello
-    */
-
-
-    /*
-    ----Steps programu-----
-
-    1. kontrola argumentu
-    2. nacteni gitsouboru
-    3. malloc pro obsah souboru
-    4. kontrola souboru
-    5. ulozeni typu:
-        - univerzum
-        - mnoziny/relace
-        - funkce
-    6. provedení funkcí na množinách/relacích
-    7. prislusny tisk vysledku funkce
-    8. ukončení programu
-
-    */
+    //free
+    free(s->set);
+    free(s);
+    free(u);
 
     fclose(file);
     return 0;
