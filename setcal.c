@@ -26,7 +26,7 @@ int set_to_index(FILE *file, Set *s, Universum *u, int uni_element){
     s->cardinality = 0;
 
     //Malloc pro jeden radek
-    s->set = malloc(50 * sizeof(int));
+    s->set = malloc(1000 * sizeof(int));
     if(s->set == NULL){
         fprintf(stderr,"memory could not be allocated");
         return false;
@@ -201,13 +201,13 @@ int main(int argc, char **argv){
     // if(malloc_structs(s,u) == false){
     //     return EXIT_FAILURE;
     // }
-    u = malloc(100 * sizeof(u));
+    u = malloc(1000 * sizeof(u));
     if (u == NULL){
         fprintf(stderr,"memory allocation was not possible.");
         return false;
     }
     //maloc pro set
-    s = malloc(100 * sizeof(s));
+    s = malloc(1000 * sizeof(s));
     if (s == NULL){
         fprintf(stderr,"memory allocation was not possible.");
         return false;
