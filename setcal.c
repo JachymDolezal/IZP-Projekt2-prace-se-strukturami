@@ -13,6 +13,35 @@ typedef struct {
     int cardinality;
 } Set;
 
+/*
+typdef struct {
+    char element[31];
+} Universum;
+
+typedef struct {
+    int *set;
+    int cardinality;
+    int radek;
+} Set;
+
+typdef struct{
+    int first;
+    int second;
+} Pairs;
+
+typdef struct {
+    Pairs *p;
+    int radek;
+} Relations;
+
+typdef strct {
+    Set *s;
+    Universum *u;
+    Relations *r;
+} Main;
+
+*/
+
 
 int set_to_index(FILE *file, Set *s, Universum *u, int uni_element){
 
@@ -34,10 +63,6 @@ int set_to_index(FILE *file, Set *s, Universum *u, int uni_element){
 
     //TODO udelat separatni funkci
     char character = 'd';
-    if (getc(file) != 'S' || getc(file) != ' '){
-        fprintf(stderr, "Set is not defined");
-        return false;
-    }
 
     while(character != '\n' && character != EOF){
         //goes to a new character
@@ -75,7 +100,7 @@ int set_to_index(FILE *file, Set *s, Universum *u, int uni_element){
 }
 
 //TODO - zmenit pro n setu
-void index_to_set(Set *s, Universum *u){
+void set_print(Set *s, Universum *u){
 
     //start of the line
     printf("S");
@@ -173,20 +198,33 @@ int universum_check(FILE *file, int *counter, int *line_length, Universum *u){
     malloc na relace
 
     */
+int is_type_correct(int first_element, int second_element){
+    if (first_element != 'S' && first_element != 'R' && first_element != 'C' && second_element != ' ')
+        return 0;
+    return 1;
+}
+
+int typecheck(FILE *file){
+    int type = getc(file);
+
+    if (type == EOF)
+        return EOF;
+
+    int space = getc(file);
+
+    if (!is_type_correct(type,space)){
+        fprintf(stderr, "ERR: Neznama definice typu/univerzum redefinovane");
+        return 0;
+    }
+    return type;
+}
+
+
 int main(int argc, char **argv){
 
     printf("num of arguments %d, name of txt: %s\n",argc,argv[1]);
     Universum *u;
     Set *s;
-
-    /*
-    u[0] = {1, "heslo"}
-    u[0].index = 1
-    u[0].elements[0] = 'h'
-    heslo
-    */
-// operator -> or ->* applied to "Universum" instead of to a pointer type
-// set.items[j] == relation[i].first
     FILE *file;
     char *filename = argv[1];
     int counter = 0;
@@ -222,9 +260,12 @@ int main(int argc, char **argv){
     /*
     plan pro main
     Variables
+
     File
     Malloc
 
+    INIT
+    ----
     - Universum parser
     - check if universum has unique elements
 
@@ -241,7 +282,6 @@ int main(int argc, char **argv){
     return 0;
 
     */
-
     if(universum_check(file, &counter, &line_length,u)){
         printf("universum is valid and has:\n %d elements\nand line_len is: %d\n", counter, line_length);
     }
@@ -250,13 +290,34 @@ int main(int argc, char **argv){
         fclose(file);
         return -1;
     }
-    if(set_to_index(file,s,u,counter)){
-        printf("sucess\n");
-    }
-    else{
-        printf("fail\n");
-        return EXIT_FAILURE;
-    }
+
+    int ret = typecheck(file);
+   while(ret != EOF){
+       if (ret == 0){
+           return 0;
+       }
+       if(ret == 'S'){
+           if(set_to_index(file,s,u,counter)){
+               printf("sucess\n");
+            }
+            else{
+                printf("fail\n");
+                //free funkce
+                return EXIT_FAILURE;
+            }
+       }
+        // if(typecheck == 'R'){
+        //     break;
+        // }
+
+        // if (typecheck == 'C'){
+        //     break;
+        // }
+        ret = typecheck(file);
+   }
+
+
+
     printf("\n");
     printf("\nelementy univerza: \n");
     for(int i = 0; i < counter; i++){
@@ -268,7 +329,7 @@ int main(int argc, char **argv){
         printf("set:[%d] = %d \n", i, s->set[i]);
     }
 
-    index_to_set(s, u);
+    set_print(s, u);
 
     //free
     free(s->set);
