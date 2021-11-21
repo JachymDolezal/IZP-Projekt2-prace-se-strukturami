@@ -17,7 +17,6 @@ void set_print(int size, int *array){
 //1. prints true if set is empty, otherwise prints false.
 bool is_empty(int cardinality){
     return cardinality>0 ? false : true;
-    // nema to byt nahodou return cardinality>0 ? true : false; ???
 }
 
 //2. ...
