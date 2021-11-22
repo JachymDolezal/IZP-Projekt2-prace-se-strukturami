@@ -24,8 +24,6 @@ bool is_empty(int cardinality){
 //3. outputs complement of a set(in relation with universe)
 void do_complement(char *universe, int universe_cardinality, int *set, int set_cardinality){
     bool found;
-    
-    printf("S ");
     for (int i = 0; i < universe_cardinality; i++){
         found = false;
         for (int j = 0; j < set_cardinality; j++){
@@ -33,7 +31,7 @@ void do_complement(char *universe, int universe_cardinality, int *set, int set_c
                 found = true;
         }
         if (!found)
-            printf("%s ", universe[i]);
+            printf("%c ", universe[i]);
     }
 }
 
@@ -73,9 +71,9 @@ void minus(int *array_A, int cardinality_A, int *array_B, int cardinality_B){
     //todo, ak sa element z A nenachadza v B, mozem ho printit... that is all folks
     // dost sa mi algoritmus podoba na subseteq forsomreason to asi je to iste haha, ak !found tak printim a done
     bool element_found;
-    int difference = malloc(cardinality_A*sizeof(int));
+    int* difference = malloc(cardinality_A*sizeof(int));
     int diff_idx = 0;
-    
+
     for (int i = 0; i < cardinality_A; i++){
         element_found = false;
         for (int j = 0; j < cardinality_B; j++){
@@ -83,9 +81,10 @@ void minus(int *array_A, int cardinality_A, int *array_B, int cardinality_B){
                 element_found = true;
                 break;
             }
-            if (!element_found)
+            if (!element_found){
                 difference[diff_idx] = array_A[i];
                 diff_idx++;
+            }
         }
     }
     set_print(diff_idx+1, difference);
