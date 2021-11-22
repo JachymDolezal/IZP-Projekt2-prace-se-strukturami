@@ -1,3 +1,4 @@
-U A B C D E F H J
-S B D E H J
-S C D E F H
+U A B C D E F
+S C F
+S E F
+C A B

@@ -174,7 +174,7 @@ int main(int argc, char *argv[]){
     minus(array_b, 4, array_c, 4);
 
     
-    do_union(array_a,8,array_b,4);
+    do_union(array_a,7,array_b,4);
 
     printf("\nequals:\n");
     printf("array_b equals array_c: %d\n", equals(array_b, 4, array_c, 4));
