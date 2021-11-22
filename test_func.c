@@ -85,13 +85,13 @@ void minus(int *array_A, int cardinality_A, int *array_B, int cardinality_B){
                 element_found = true;
                 break;
             }
-            if (!element_found){
-                difference[diff_idx] = array_A[i];
-                diff_idx++;
-            }
+        }
+        if (!element_found){
+            difference[diff_idx] = array_A[i];
+            diff_idx++;
         }
     }
-    set_print(diff_idx+1, difference);
+    set_print(diff_idx, difference);
     free(difference);
 }
 
@@ -173,6 +173,7 @@ int main(int argc, char *argv[]){
     printf("\nArray_B - Array_C:\n");
     minus(array_b, 4, array_c, 4);
 
+    
     do_union(array_a,8,array_b,4);
 
     printf("\nequals:\n");
