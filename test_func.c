@@ -87,7 +87,7 @@ void minus(int *array_A, int cardinality_A, int *array_B, int cardinality_B){
             }
         }
     }
-    set_print(diff_idx+1, difference);
+    set_print(diff_idx, difference);
     free(difference);
 }
 
@@ -145,15 +145,35 @@ bool equals(int *array_A, int cardinality_A, int *array_B, int cardinality_B){
 int main(int argc, char *argv[]){
     printf("argc: %d , argv: %s\n",argc, argv[0]);
 
-    int array_a[10] = {1,2,3,5,6,7,8,4};
-    int array_b[10] = {1,2,3,4};
+    //int universe[10] = {1,2,3,4,5,6,7,8,9,10};
+    int array_a[10] = {1,2,3,5,6,7,8};
+    int array_b[4] = {1,2,3,4};
+    int array_c[4] = {6,2,4,1};
+    int array_d[5] = {1,3,4,2,5};
+    int array_e[4] = {4,2,3,1};
     int cardinality = 0;
 
-    printf("is empty: %d\n",is_empty(cardinality));
+    printf("\nfunction 1 is_empty:\n");
+    printf("is empty: %d\n\n",is_empty(cardinality));
 
-    printf("bool subsetqt: %d\n",subseteq(array_a,4,array_b,4));
+    // printf("function 2 do_complement:\n");
+    // set_print(10, universe);
+    // set_print(4,array_c);
+    // printf("complement:\n");
+    // do_complement(universe,10,array_c,4);
+    // printf("\n");
 
+    printf("bool subseteq array_c and array_d: %d\n",subseteq(array_b,4,array_d,5));
+    printf("bool subseteq array_d and array_c: %d\n", subseteq(array_d, 5, array_c, 4));
+
+    printf("\nArray_B - Array_C:\n");
+    minus(array_b, 4, array_c, 4);
+
+    
     do_union(array_a,8,array_b,4);
 
+    printf("\nequals:\n");
+    printf("array_b equals array_c: %d\n", equals(array_b, 4, array_c, 4));
+    printf("array_e equals array_b: %d\n", equals(array_e, 4, array_b, 4));
     return 0;
 }
