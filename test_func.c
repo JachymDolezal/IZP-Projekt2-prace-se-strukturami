@@ -22,22 +22,18 @@ bool is_empty(int cardinality){
 //2. ...
 
 //3. outputs complement of a set(in relation with universe)
-// toto som robil s tym ze to funguje na setcal.c, kde mame universe ulozeny ako ({index, element}, {index, elemement}...) 
-// void do_complement(char *universe, int universe_cardinality, int *set, int set_cardinality){
-//     bool found;
-    
-//     printf("S ");
-//     for (int i = 0; i < universe_cardinality; i++){
-//         found = false;
-//         for (int j = 0; j < set_cardinality; j++){
-//             if (set[j] == i)
-//                 found = true;
-//         }
-//         if (!found)
-//             printf("%s ", universe[i]);
-//     }
-//     printf("\n");
-// }
+void do_complement(char *universe, int universe_cardinality, int *set, int set_cardinality){
+    bool found;
+    for (int i = 0; i < universe_cardinality; i++){
+        found = false;
+        for (int j = 0; j < set_cardinality; j++){
+            if (set[j] == i)
+                found = true;
+        }
+        if (!found)
+            printf("%c ", universe[i]);
+    }
+}
 
 //4.. Outputs a union of two sets.
 void do_union(int *array_a, int cardinality_A, int * array_b, int cardinality_B){
@@ -75,9 +71,9 @@ void minus(int *array_A, int cardinality_A, int *array_B, int cardinality_B){
     //todo, ak sa element z A nenachadza v B, mozem ho printit... that is all folks
     // dost sa mi algoritmus podoba na subseteq forsomreason to asi je to iste haha, ak !found tak printim a done
     bool element_found;
-    int *difference = malloc(cardinality_A*sizeof(int));
+    int* difference = malloc(cardinality_A*sizeof(int));
     int diff_idx = 0;
-    
+
     for (int i = 0; i < cardinality_A; i++){
         element_found = false;
         for (int j = 0; j < cardinality_B; j++){
@@ -85,10 +81,10 @@ void minus(int *array_A, int cardinality_A, int *array_B, int cardinality_B){
                 element_found = true;
                 break;
             }
-        }
-        if (!element_found){
-            difference[diff_idx] = array_A[i];
-            diff_idx++;
+            if (!element_found){
+                difference[diff_idx] = array_A[i];
+                diff_idx++;
+            }
         }
     }
     set_print(diff_idx, difference);
@@ -174,7 +170,7 @@ int main(int argc, char *argv[]){
     minus(array_b, 4, array_c, 4);
 
     
-    do_union(array_a,7,array_b,4);
+    do_union(array_a,8,array_b,4);
 
     printf("\nequals:\n");
     printf("array_b equals array_c: %d\n", equals(array_b, 4, array_c, 4));

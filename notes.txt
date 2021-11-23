@@ -105,9 +105,9 @@ Relace + malloc
 Funkce pro sets
 ---------------
 - funkce union
-    .
-    .
-    .
+    - empty
+    union
+    subseteq
 - posledni funkce
 
 Funkce pro relace
