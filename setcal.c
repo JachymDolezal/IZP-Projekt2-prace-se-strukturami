@@ -151,6 +151,7 @@ int universum_check(FILE *file, int *line_length, Main *m){
     (*line_length)++;
 
         if (character == ' ' || character == '\n' || character == EOF){
+            printf("i%d:mezera\n",i++);
            // u[idx].index = idx;
         //    printf("element_len: %d\n", element_len);
         //    printf("element_len 0: %d\n",element_len);
@@ -161,7 +162,7 @@ int universum_check(FILE *file, int *line_length, Main *m){
         }
     }
     //if (character != '\n') // uplne nahodou ak je prazdne univerzum U tak aby nevyhodil universum cardinality a pritom tam nejsou prvky..(ani nevim zda muze byt prazdny)
-        (m->universum_cardinality)++;
+        //(m->universum_cardinality)++;
     m->u[idx].element[element_len+1] = '\0';
     return 1;
 }
@@ -495,7 +496,7 @@ int main(int argc, char **argv){
                 set_print(m->s[m->set_line].cardinality,m->s[m->set_line].set);
                 m->s[m->set_line].radek = radek++;
                 (m->set_line)++;
-                printf("setline: %d\n", m->set_line);
+                // printf("setline: %d\n", m->set_line);
             }
             else{
                 printf("fail\n");
@@ -513,8 +514,11 @@ int main(int argc, char **argv){
         // }
         // ret = typecheck(file);
     }
-    do_union(m,0,1);
 
+    do_union(m,3,4);
+    for (int i = 0; i < m->set_line; i++){
+        printf("set %d cardinality: %d\n", i, m->s[i].cardinality);
+    }
     //free memory
     free(m->s->set);
     free(m->u);
