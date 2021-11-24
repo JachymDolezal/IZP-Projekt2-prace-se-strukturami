@@ -132,43 +132,80 @@ int set_to_index(FILE *file, Main *m){
 // }
 
 //TODO - dat inkrementaci na konec
-int universum_check(FILE *file, int *line_length, Main *m){
+int universum_check(FILE *file, Main *m){
+
+    //tento character a space je totalni kktina, ale ak das getc(file) do if statementu, tak to proste netriggerne tu funkciu..
+    char character = getc(file);
+    char space = getc(file);
+    if (character != 'U' && space != ' '){
+        fprintf(stderr, "ERROR: Invalid universe definition!");
+        return -1;
+    }
+
+    character = getc(file); //mozno do zaciatku while loopu..
     int element_len = 0;
     int idx = 0;
-    char character = getc(file);
-    printf("%c\n", character);
+    m->universum_cardinality = 1;
 
-    for(int i = 0; character != '\n' && character != EOF; i++){
-        if (element_len-1 > 30){
-            fprintf(stderr, "prvek longer than 30 chars...");
+    while (character != '\n' && character != EOF){
+        if (element_len > 29){
+            fprintf(stderr,"ERROR: Element in UNIVERSE exceeds 30 characters!");
             return -1;
         }
-
-        character = getc(file);
-        printf("char: %c\n", character);
         if (character != ' '){
             m->u[idx].element[element_len] = character;
+            element_len++;
         }
-        // printf("idx: %d character: %c element_len: %d\n",idx, character, element_len);
-        element_len++;
-        (*line_length)++;
-
-            if (character == ' ' || character == '\n' || character == EOF){
-                printf("i%d:mezera\n",i);
-            // u[idx].index = idx;
-            // printf("element_len: %d\n", element_len);
-            //    printf("element_len 0: %d\n",element_len);
-                m->u[idx].element[element_len-1] = '\0';
-                element_len = 0;
-                (m->universum_cardinality)++;
-                idx++;
-            }
+        if (character == ' '){
+            m->u[idx].element[element_len+1] = '\0';
+            element_len = 0;
+            idx++;
+            m->universum_cardinality += 1;
+        }
+        character = getc(file);
     }
-    //if (character != '\n') // uplne nahodou ak je prazdne univerzum U tak aby nevyhodil universum cardinality a pritom tam nejsou prvky..(ani nevim zda muze byt prazdny)
-        //(m->universum_cardinality)++;
-    m->u[idx].element[element_len+1] = '\0';
+    printf("po while je character: %c\n", character);
     return 1;
+    
+    // int element_len = 0;
+    // int idx = 0;
+    // char character = getc(file);
+    // printf("%c\n", character);
+    // getc(file);
+
+    // for(int i = 0; character != '\n' && character != EOF; i++){
+    //     if (element_len-1 > 30){
+    //         fprintf(stderr, "prvek longer than 30 chars...");
+    //         return -1;
+    //     }
+
+    //     character = getc(file);
+    //     printf("char: %c\n", character);
+    //     if (character != ' '){
+    //         m->u[idx].element[element_len] = character;
+    //         element_len++;
+    //     }
+    //     // printf("idx: %d character: %c element_len: %d\n",idx, character, element_len);
+    //     (*line_length)++;
+
+    //         if (character == ' ' || character == '\n' || character == EOF){
+    //             printf("i%d:mezera\n",i);
+    //         // u[idx].index = idx;
+    //         // printf("element_len: %d\n", element_len);
+    //         //    printf("element_len 0: %d\n",element_len);
+    //             m->u[idx].element[element_len+1] = '\0';
+    //             element_len = 0;
+    //             (m->universum_cardinality)++;
+    //             idx++;
+    //         }
+    // }
+    // //if (character != '\n') // uplne nahodou ak je prazdne univerzum U tak aby nevyhodil universum cardinality a pritom tam nejsou prvky..(ani nevim zda muze byt prazdny)
+    // //(m->universum_cardinality)++;
+    // //m->u[idx].element[element_len+1] = '\0';
+    // return 1;
 }
+
+
 // int malloc_structs(Set *s, Universum *u){
 //     //malloc pro univerzum
 //     u = malloc(100 * sizeof(int));
@@ -511,7 +548,7 @@ void domain(Main *m, int rel_index){
 
     for (int i = 0; i < rel_cardinality; i++){
         x = m->r[rel_index].p[i].first;
-        if (!in_array(domain, domain_size, m)){
+        if (!in_array(domain, domain_size, x)){
             domain[domain_size] = x;
             domain_size++;
         }
@@ -525,7 +562,6 @@ int main(int argc, char **argv){
     Main *m;
     FILE *file;
     char *filename = argv[1];
-    int line_length = 0;
     int radek = 1;
     file = fopen(filename, "r");
 
@@ -584,12 +620,16 @@ int main(int argc, char **argv){
     return 0;
 
     */
-    if(universum_check(file, &line_length,m)){
-        printf("universum is valid and has: %d elements\nand line_len is: %d\n", m->universum_cardinality, line_length);
+    if(universum_check(file, m)){
+        printf("universum is valid and has: %d elements\n", m->universum_cardinality);
     }
     else{
         fprintf(stderr,"Error universum could not be parsed.");
         fclose(file);
+        free(m->s->set);
+        free(m->u);
+        free(m->s);
+        free(m);
         return -1;
     }
 
