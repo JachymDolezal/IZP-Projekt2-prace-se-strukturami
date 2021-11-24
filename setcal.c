@@ -20,6 +20,7 @@ typedef struct{
 
 typedef struct {
     Pairs *p;
+    int cardinality;
     int radek;
 } Relations;
 
@@ -135,31 +136,33 @@ int universum_check(FILE *file, int *line_length, Main *m){
     int element_len = 0;
     int idx = 0;
     char character = getc(file);
+    printf("%c\n", character);
 
     for(int i = 0; character != '\n' && character != EOF; i++){
-        if (element_len > 30){
+        if (element_len-1 > 30){
             fprintf(stderr, "prvek longer than 30 chars...");
             return -1;
         }
 
-    character = getc(file);
-    if (character != ' '){
-        m->u[idx].element[element_len] = character;
-    }
-    // printf("idx: %d character: %c element_len: %d\n",idx, character, element_len);
-    element_len++;
-    (*line_length)++;
-
-        if (character == ' ' || character == '\n' || character == EOF){
-            printf("i%d:mezera\n",i++);
-           // u[idx].index = idx;
-        //    printf("element_len: %d\n", element_len);
-        //    printf("element_len 0: %d\n",element_len);
-            m->u[idx].element[element_len-1] = '\0';
-            element_len = 0;
-            (m->universum_cardinality)++;
-            idx++;
+        character = getc(file);
+        printf("char: %c\n", character);
+        if (character != ' '){
+            m->u[idx].element[element_len] = character;
         }
+        // printf("idx: %d character: %c element_len: %d\n",idx, character, element_len);
+        element_len++;
+        (*line_length)++;
+
+            if (character == ' ' || character == '\n' || character == EOF){
+                printf("i%d:mezera\n",i);
+            // u[idx].index = idx;
+            // printf("element_len: %d\n", element_len);
+            //    printf("element_len 0: %d\n",element_len);
+                m->u[idx].element[element_len-1] = '\0';
+                element_len = 0;
+                (m->universum_cardinality)++;
+                idx++;
+            }
     }
     //if (character != '\n') // uplne nahodou ak je prazdne univerzum U tak aby nevyhodil universum cardinality a pritom tam nejsou prvky..(ani nevim zda muze byt prazdny)
         //(m->universum_cardinality)++;
@@ -288,7 +291,7 @@ void intersect(Main *m,int set_index_a,int set_index_b){
     int cardinality_b = m->s[set_index_b].cardinality;
     int printed_elements = 0;
     int intersect_cardinality = 0;
-    int *intersect = malloc(sizeof(int) * cardinality_a);
+    int *intersect = malloc(cardinality_a*sizeof(int));
     for (i = 0; i < cardinality_a; ++i)
     {
         // printf("%d", i);
@@ -390,6 +393,132 @@ bool subset(Main *m, int set_index_a, int set_index_b){
     return false;
 }
 
+//9. returns true if set A is equal to set B
+int compare(const void * a, const void * b) {
+   return ( *(int*)a - *(int*)b );
+}
+bool equals(Main *m, int set_index_a, int set_index_b){
+//https://www.cplusplus.com/reference/cstring/memcmp/
+//https://www.cplusplus.com/reference/cstdlib/qsort/
+    int cardinality_a = m->s[set_index_a].cardinality;
+    int cardinality_b = m->s[set_index_b].cardinality;
+    
+    if (cardinality_a != cardinality_b)
+        return false;
+
+    qsort(m->s[set_index_a].set, cardinality_a, sizeof(int), compare); //tato funkce zmeni hodnoty v Set *s!!! snad to neni problem...
+    qsort(m->s[set_index_b].set, cardinality_b, sizeof(int), compare);
+    
+    if (memcmp(m->s[set_index_a].set, m->s[set_index_b].set, cardinality_a*sizeof(int)) == 0)
+        return true;
+    return false;
+}
+
+
+
+
+//*************************************************************//
+//************************ R E L A C E ************************//
+//*************************************************************//  
+
+bool symmetric(Main *m, int rel_index){
+    // rel_index bude index kde se nachazi spravny .radek
+    // m->r[rel_index].p[index_dvojice].first; 
+    // m->r[rel_index].p[index_dvojice].second;
+
+    int rel_cardinality = m->r[rel_index].cardinality;
+    int a1, b1, a2, b2;
+    bool found_symmetric;
+  
+    for (int i = 0; i < rel_cardinality; i++){
+        a1 = m->r[rel_index].p[i].first;
+        b1 = m->r[rel_index].p[i].second;
+        found_symmetric = false;
+
+        for (int j = 0; j < rel_cardinality; j++){
+
+            if (j == i){
+                continue;
+            }
+
+            a2 = m->r[rel_index].p[j].first;
+            b2 = m->r[rel_index].p[j].second;
+
+            if (a2 == b1 && b2 == a1){
+                    found_symmetric = true;
+            }
+        }
+        if (!found_symmetric)
+            return false;
+    }
+    return true;
+}
+
+    //zoberem v prvej dvojici prvky, hladam dalsiu dvojicu kde sa 2.(b1) nachadza na 1.(b2), tam pozrem 2.(c1) prvok, 
+    //potom cyklom hladam kde je zas 1.(a2) prvok na zaciatku, a ked je tam druhy prvok(c2) rovny (c1), nasiel sa tranzitiv na a b c.
+    // takto prejdem vsetky dvojice...
+bool transitive(Main *m, int rel_index){
+
+    int rel_cardinality = m->r[rel_index].cardinality;
+    int a1,b1,a2,b2,c1,c2;
+    bool found_transitive;
+
+    for (int i = 0; i < rel_cardinality; i++){
+        a1 = m->r[rel_index].p[i].first;
+        b1 = m->r[rel_index].p[i].second;
+        found_transitive = false;
+
+        for (int j = 0; j < rel_cardinality; j++){
+            if (j == i){
+                continue;
+            }
+            b2 = m->r[rel_index].p[j].first;
+            if (b2 == b1){
+                c1 = m->r[rel_index].p[j].second;
+
+                for (int k = 0; k < rel_cardinality; k++){
+                    if (k == i || k == j){
+                        continue;
+                    }
+                    a2 = m->r[rel_index].p[k].first;
+                    c2 = m->r[rel_index].p[k].second;
+                    if (a2 == a1 && c2 == c1){
+                        found_transitive = true;
+                    }
+                }
+            }
+        }
+        if (!found_transitive){
+            return false;
+        }
+    }
+    return true;
+} 
+
+int in_array(int *arr, int arr_size, int number){
+    for (int i = 0; i < arr_size; i++){
+        if (*(arr+i) == number){
+            return 1;
+        }
+    }
+    return 0;
+}
+
+void domain(Main *m, int rel_index){
+    int rel_cardinality = m->r[rel_index].cardinality;
+    int *domain = malloc(rel_cardinality*sizeof(int));
+    int x, domain_size = 0;
+
+    for (int i = 0; i < rel_cardinality; i++){
+        x = m->r[rel_index].p[i].first;
+        if (!in_array(domain, domain_size, m)){
+            domain[domain_size] = x;
+            domain_size++;
+        }
+    }
+    set_print(domain_size, domain);
+}
+
 int main(int argc, char **argv){
 
     printf("num of arguments %d, name of txt: %s\n",argc,argv[1]);
@@ -456,7 +585,7 @@ int main(int argc, char **argv){
 
     */
     if(universum_check(file, &line_length,m)){
-        printf("universum is valid and has:\n %d elements\nand line_len is: %d\n", m->universum_cardinality, line_length);
+        printf("universum is valid and has: %d elements\nand line_len is: %d\n", m->universum_cardinality, line_length);
     }
     else{
         fprintf(stderr,"Error universum could not be parsed.");
@@ -470,7 +599,6 @@ int main(int argc, char **argv){
     char character = getc(file);
     printf("%c idx: %d\n", character,i);
     i++;
-    printf("radek:%d\n",radek);
     while(character != EOF){
         if (character == 0){
             return 0;
