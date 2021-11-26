@@ -26,7 +26,7 @@ typedef struct {
 typedef struct {
     Set *s;
     Universum *u;
-    int set_line; 
+    int set_line;
     int universum_cardinality;
     Relations *r;
     int rel_line;
@@ -60,11 +60,6 @@ int set_to_index(FILE *file, Main *m){
     m->s[set_line_index].cardinality = 0;
 
     //Malloc pro jeden radek
-    // main.s[*mainindex]->set = malloc(1000 * sizeof(int));
-    // if(main.s->set == NULL){
-    //     fprintf(stderr,"memory could not be allocated");
-    //     return false;
-    // }
     m->s[set_line_index].set = malloc( 1000 * sizeof(m->s->set));
     if (m->s[set_line_index].set == NULL){
         fprintf(stderr,"memory allocation was not possible.");
@@ -72,7 +67,7 @@ int set_to_index(FILE *file, Main *m){
     }
 
     //TODO udelat separatni funkci
-    char character;
+    char character = 'd';
 
     while(character != '\n' && character != EOF){
         //goes to a new character
@@ -108,6 +103,104 @@ int set_to_index(FILE *file, Main *m){
     }
     return 1;
 }
+
+int relation_to_index(FILE *file, Main *m){
+
+    bool first_word_loaded = false;
+    bool second_word_loaded = false;
+
+    char temp[31];
+    int index = 0;
+
+    char character = 'd';
+    int element_index = 0;
+    int line_index = m->rel_line;
+    bool was_found = false;
+
+    int relation_line_index = m->r->radek;
+    //vars
+
+    m->r[relation_line_index].p = malloc(1000 * sizeof(m->r->p));
+    if(m->r[relation_line_index].p == NULL){
+        fprintf(stderr, "memory allocation was not possible");
+        return EXIT_FAILURE;
+    }
+
+
+    while(character != '\n' && character != EOF){
+        character = getc(file);
+        if(character == '('){
+            while(character != ' '){
+                //load to temp
+                character = getc(file);
+                temp[index++] = character;
+
+                if (character == ' '){
+                    temp[index-1] = '\0';
+                    printf("first word %s\n", temp);
+                    // printf("finding 1st index\n");
+                    for (int j = 0; j < m->universum_cardinality; j++){
+
+                        if (strcmp(temp, m->u[j].element) == 0){
+                            m->r[line_index].p[element_index].first = j;
+                            was_found = true;
+                            break;
+                        }
+                    }
+                    if (!was_found){
+                        fprintf(stderr, "Prvek neni z univerza\n");
+                        return false;
+                    }
+                    index = 0;
+                    strcpy(temp,"");
+                    first_word_loaded = true;
+                    continue;
+                }
+                // printf("first_word: %c\n", character);
+            }
+            while(character != ')'){
+                character = getc(file);
+                temp[index++] = character;
+
+                if( character == ')'){
+                    temp[index-1] = '\0';
+                    for (int j = 0; j < m->universum_cardinality; j++){
+
+                        if (strcmp(temp, m->u[j].element) == 0){
+                            m->r[line_index].p[element_index].second = j;
+                            was_found = true;
+                            break;
+                        }
+                    }
+                    if (!was_found){
+                        fprintf(stderr, "Prvek neni z univerza\n");
+                        return false;
+                    }
+                    index = 0;
+                    strcpy(temp,"");
+                    second_word_loaded = true;
+                    continue;
+                }
+                // printf("second_word: %c\n", character);
+            }
+            if(second_word_loaded && first_word_loaded){
+                first_word_loaded = false;
+                second_word_loaded = false;
+                element_index++;
+            }
+        }
+    }
+
+    return 0;
+}
+
+
+/*
+
+R (hello bye) (bye sorry) (sorry now)/n
+
+
+*/
 
 // int relation_to_index(FILE *file, Main *m){
 //     return 0;
@@ -220,17 +313,10 @@ int universum_check(FILE *file, int *line_length, Main *m){
 //     return type;
 // }
 
-/*
-************************** SET FUNKCE
-*/
-// 1
-//...
-
 //2 Prints out the element count/cardinality in a set.
 void print_cardinality(Main *m, int set_index){
     printf("Set has : %d elements\n", m->s[set_index].cardinality);
 }
-
 
 //3
 void do_complement(Main *m, int set_index){
@@ -281,6 +367,7 @@ void do_union(Main *m, int set_index_a, int set_index_b){
 
 }
 // 5.. Prints out intersection of two sets.
+
 // retype to INT for malloc errors...!!!
 void intersect(Main *m,int set_index_a,int set_index_b){
     int i, j;
@@ -317,12 +404,10 @@ void intersect(Main *m,int set_index_a,int set_index_b){
     free(intersect);
 }
 
-
 //prints true if set is empty, otherwise prints false.
 bool is_empty( Main *m,int set_index){
     return m->s[set_index].cardinality > 0 ? false : true;
 }
-
 
 //6. prints A-B
 void minus(Main *m, int set_index_a, int set_index_b){
@@ -420,6 +505,11 @@ int main(int argc, char **argv){
     //maloc pro set
     m->s = malloc(1000 * sizeof(int));
     if (m->s == NULL){
+        fprintf(stderr,"memory allocation was not possible.");
+        return EXIT_FAILURE;
+    }
+    m->r = malloc(1000 * sizeof(m->r));
+    if (m->r == NULL){
         fprintf(stderr,"memory allocation was not possible.");
         return EXIT_FAILURE;
     }

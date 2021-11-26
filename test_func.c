@@ -135,7 +135,7 @@ bool equals(int *array_A, int cardinality_A, int *array_B, int cardinality_B){
 
     qsort(array_A, cardinality_A, sizeof(int), compare); //tato funkce zmeni hodnoty v Set *s!!! snad to neni problem...
     qsort(array_B, cardinality_B, sizeof(int), compare);
-    
+
     if (memcmp(array_A, array_B, cardinality_A*sizeof(int)) == 0)
         return true;
     return false;
