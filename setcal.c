@@ -717,11 +717,11 @@ int main(int argc, char **argv){
     }
     else{
         fprintf(stderr,"Error universum could not be parsed.");
-        fclose(file);
-        free(m->s->set);
-        free(m->u);
-        free(m->s);
-        free(m);
+        // fclose(file);
+        // free(m->s->set);
+        // free(m->u);
+        // free(m->s);
+        // free(m);
         return -1;
     }
 
