@@ -1,3 +1,12 @@
+/*
+Authors:
+@FrodoCZE login: xdolez0c
+@Midiros login: xlegne
+@youruncle1 login: xpolia05
+
+Last updated 27.11.2021 2 p.m.
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -5,13 +14,25 @@
 
 typedef struct {
     char element[31];
-} Universum;
+} Universum_elements;
 
 typedef struct {
-    int *set;
+    int universum_cardinality;
+    int capacity;
+    Universum_elements *element;
+} Universum;
+
+typedef struct{
+    int *set_items;
+    int capacity;
     int cardinality;
-    int radek;
-} Set;
+    int line_index;
+} Set_line;
+
+typedef struct{
+    Set_line *l;
+    int line_capacity;
+} Sets;
 
 typedef struct{
     int first;
@@ -21,18 +42,44 @@ typedef struct{
 typedef struct {
     Pairs *p;
     int cardinality;
-    int radek;
-} Relations;
+    int capacity;
+    int line_index;
+} Relation_line;
 
 typedef struct {
-    Set *s;
-    Universum *u;
-    int set_line;
-    int universum_cardinality;
-    Relations *r;
-    int rel_line;
+    Relation_line *l;
+    int line_capacity;
+} Relations;
+
+typedef struct{
+    Sets s; // m.s->l[idx]->set
+    Universum u;
+    Relations r;
+
 } Main;
 
+int *allocate_or_resize(int *arr, unsigned int size){
+    
+    int *new_arr = (int*)realloc(arr, size);
+    if (new_arr == NULL){
+        free(arr);
+        return NULL;
+    }
+
+    return new_arr;
+}
+
+Set_line *set_ctor(int line){
+
+    Set_line *set = malloc(sizeof(Set_line));
+    if (set == NULL)
+        return NULL;
+    set->set_items = NULL;
+    set->capacity = 0;
+    set->cardinality = 0;
+    set->line_index = line;
+    return set;
+}
 
 //prints a set
 void set_print(int cardinality, int *array){
@@ -747,6 +794,7 @@ int main(int argc, char **argv){
             printf("newline\n");
         }
         if(character == EOF){
+            break;
             printf("EOF\n");
         }
         if(character == 'S'){
@@ -783,9 +831,9 @@ int main(int argc, char **argv){
     free(m->s[0].set);
     free(m->s[1].set);
     free(m->u); //problem
-    printf("test\n");
+    // printf("test\n");
     free(m->r);
-    printf("test\n");
+    // printf("test\n");
     free(m->s);
     free(m);
     fclose(file);
