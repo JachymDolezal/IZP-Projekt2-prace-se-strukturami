@@ -256,7 +256,7 @@ int main(int argc, char *argv[])
         fclose(file);
         return 1;
     }
-    
+
     //if typecheck(file) == 'U'
     //uniload;
     //else fail;
