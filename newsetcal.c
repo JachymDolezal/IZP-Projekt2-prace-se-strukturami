@@ -209,7 +209,7 @@ int type_check(FILE *file){
     if (character == 'U'){
         if(getc(file) == ' '){
             printf("U line!\n");
-            getc(file);
+            return 2;
         }
     }
     if (character == 'S'){
@@ -262,10 +262,13 @@ int load_universum(FILE *file, Main *m){
             fprintf(stderr,"ERROR: Element defined in universe longer than 30 characters!");
             return -1;
         }
+        
         if (character != ' '){
             element[element_len++] = character;
         }
-        if (character == ' '){
+        printf("character: %c", character);
+        character = getc(file);
+        if (character == ' ' || character == '\n'){
             element[element_len] = '\0';
             uni_add_element(m, element, idx);
             if (m->u->elements[idx].element == NULL){ 
@@ -273,9 +276,9 @@ int load_universum(FILE *file, Main *m){
                 return -1; 
             }
             idx++;
+            element_len = 0;
             strcpy(element, "");
         }
-        character = getc(file);
     }
     return 1;
 }
@@ -313,11 +316,17 @@ int main(int argc, char *argv[])
     //while
     while(1){
        int return_value = type_check(file);
+       if (return_value == 2){
+           load_universum(file, m);
+       }
         if(!return_value){
             break;
         }
     }
-
+    printf("\n****UNIVERSUM:****\ncardinality: %d\n capacity: %d\n",m->u->universum_cardinality, m->u->capacity);
+    for(int i = 0; i < m->u->universum_cardinality; i++){
+        printf("u%d: %s\n", i, m->u->elements[i].element);
+    }
     //dtor
     main_dtor(m,2);
     fclose(file);
