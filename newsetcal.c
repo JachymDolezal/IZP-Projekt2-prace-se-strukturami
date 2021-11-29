@@ -35,6 +35,7 @@ typedef struct{
 typedef struct{
     Set_line *l;
     int line_capacity;
+    int line_cardinality;
 } Sets;
 
 typedef struct{
@@ -113,6 +114,7 @@ int init_universum(Main *m){
 
 int init_set(Main *m){
     m->s->line_capacity = 1;
+    m->s->line_cardinality = 0;
     m->s->l = malloc(sizeof(Set_line));
     if (m->s->l == NULL){
         return 0;
@@ -208,14 +210,12 @@ int type_check(FILE *file){
 
     if (character == 'U'){
         if(getc(file) == ' '){
-            printf("U line!\n");
             return 2;
         }
     }
     if (character == 'S'){
         if(getc(file) == ' '){
-            printf("S line!\n");
-            getc(file);
+            return 3;
         }
     }
     if (character == 'R'){
@@ -237,18 +237,21 @@ int type_check(FILE *file){
     return 1;
 }
 
+
 int uni_add_element(Main *m, char *element, int idx){
     if (m->u->universum_cardinality + 1 > m->u->capacity){
 
         m->u->capacity = m->u->capacity*2 + 1;
         m->u->elements = allocate_or_resize(m->u->elements, m->u->capacity*sizeof(Universum_elements));
         if ((m->u->elements) == NULL)
-            return FALSE;
+            return false;
     }
     strcpy(m->u->elements[idx].element, element);
     (m->u->universum_cardinality)++;
     return TRUE;
 }
+
+
 int load_universum(FILE *file, Main *m){
     char element[31];
     char character;
@@ -257,28 +260,93 @@ int load_universum(FILE *file, Main *m){
 
     character = getc(file);
 
+
     while (character != '\n' && character != EOF){
         if (element_len > 29){
             fprintf(stderr,"ERROR: Element defined in universe longer than 30 characters!");
             return -1;
         }
-        
+
         if (character != ' '){
             element[element_len++] = character;
         }
-        printf("character: %c", character);
+        // printf("character: %c\n", character);
         character = getc(file);
         if (character == ' ' || character == '\n'){
             element[element_len] = '\0';
             uni_add_element(m, element, idx);
-            if (m->u->elements[idx].element == NULL){ 
+            if (m->u->elements[idx].element == NULL){
                 fprintf(stderr, "ERROR: Memory allocation failure...");
-                return -1; 
+                return -1;
             }
             idx++;
             element_len = 0;
             strcpy(element, "");
         }
+    }
+    return 1;
+}
+
+int is_in_universum(Main *m, char *str){
+    for (int j = 0; j < (m->u->universum_cardinality); j++){
+
+        if (!(strcmp(str, m->u->elements[j].element))){
+            return j;
+        }
+    }
+    //not found
+    return -1;
+}
+
+int set_add_element(Main *m, int element_index, int idx){
+
+    int line_cardinality = m->s->line_cardinality;
+
+    if (m->s->l->cardinality + 1 > m->s->l->capacity){
+
+        m->s->l->capacity = m->s->l->capacity*2 + 1;
+        m->s->l->set_items = allocate_or_resize(m->s->l->set_items, m->s->l->capacity*sizeof(int));
+        if((m->u->elements) == NULL){
+            return false;
+        }
+    }
+    m->s->l[line_cardinality].set_items[idx] = element_index;
+    (m->s->l->cardinality)++;
+    return -1;
+}
+
+int set_to_index(FILE *file, Main *m){
+
+    char character = getc(file);
+    char element[31];
+    int element_len = 0;
+    int idx = 0;
+    int set_index = 0;
+
+    while (character != '\n' && character != EOF){
+        if (character != ' '){
+            element[element_len++] = character;
+        }
+        character = getc(file);
+        if (character == ' ' || character == '\n'){
+            element[element_len] = '\0';
+            set_index = is_in_universum(m, element);
+            if (set_index != -1){
+                set_add_element(m, set_index, idx);
+                if(m->s->l->set_items == NULL){
+                    fprintf(stderr, "ERROR: Memory allocation failure...\n");
+                    return -1;
+                }
+                idx++;
+                element_len = 0;
+                strcpy(element, "");
+            }
+            else{
+                fprintf(stderr,"element is not in universum\n");
+                return -1;
+            }
+        }
+
     }
     return 1;
 }
@@ -319,6 +387,9 @@ int main(int argc, char *argv[])
        if (return_value == 2){
            load_universum(file, m);
        }
+       if (return_value == 3){
+           set_to_index(file,m);
+       }
         if(!return_value){
             break;
         }
@@ -326,6 +397,9 @@ int main(int argc, char *argv[])
     printf("\n****UNIVERSUM:****\ncardinality: %d\n capacity: %d\n",m->u->universum_cardinality, m->u->capacity);
     for(int i = 0; i < m->u->universum_cardinality; i++){
         printf("u%d: %s\n", i, m->u->elements[i].element);
+    }
+    for(int i = 0; i < m->s->l->cardinality; i++){
+        printf("S %d: %d\n", i, m->s->l->set_items[i]);
     }
     //dtor
     main_dtor(m,2);
