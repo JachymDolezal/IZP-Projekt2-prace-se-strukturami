@@ -242,7 +242,7 @@ int uni_add_element(Main *m, char *element, int idx){
 
         m->u->capacity = m->u->capacity*2 + 1;
         m->u->elements = allocate_or_resize(m->u->elements, m->u->capacity*sizeof(Universum_elements));
-        if (m->u->elements = NULL)
+        if ((m->u->elements) == NULL)
             return FALSE;
     }
     strcpy(m->u->elements[idx].element, element);
@@ -251,6 +251,7 @@ int uni_add_element(Main *m, char *element, int idx){
 }
 int load_universum(FILE *file, Main *m){
     char element[31];
+    char character;
     int idx = 0; // idx = m->u->universum_cardinality ????? mam pocit ze hej
     int element_len = 0;
 
@@ -267,7 +268,7 @@ int load_universum(FILE *file, Main *m){
         if (character == ' '){
             element[element_len] = '\0';
             uni_add_element(m, element, idx);
-            if (m->u->elements[idx] == NULL){
+            if (m->u->elements[idx].element == NULL){ 
                 fprintf(stderr, "ERROR: Memory allocation failure...");
                 return -1; 
             }
