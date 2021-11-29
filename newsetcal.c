@@ -12,12 +12,15 @@ Last updated 27.11.2021 2 p.m.
 #include <stdbool.h>
 #include <string.h>
 
+#define TRUE 1
+#define FALSE 0
+
 typedef struct {
     char element[31];
 } Universum_elements;
 
 typedef struct {
-    Universum_elements *e;
+    Universum_elements *elements;
     int universum_cardinality;
     int capacity;
 } Universum;
@@ -99,8 +102,8 @@ Relation_line *relation_ctor(int line){
 int init_universum(Main *m){
     m->u->capacity = 1;
     m->u->universum_cardinality = 0;
-    m->u->e = malloc(sizeof(Universum_elements));
-    if(m->u->e == NULL){
+    m->u->elements = malloc(sizeof(Universum_elements));
+    if(m->u->elements == NULL){
         return 0;
     }
 
@@ -146,7 +149,7 @@ void main_dtor(Main *m, int depth){
         for (int i = m->r->line_capacity; i >= 0; i--){
             free(m->r[i].l);
         }
-        free(m->u->e);
+        free(m->u->elements);
     }
     if(depth >= 1){
         free(m->u);
@@ -231,6 +234,48 @@ int type_check(FILE *file){
         return 0;
     }
 
+    return 1;
+}
+
+int uni_add_element(Main *m, char *element, int idx){
+    if (m->u->universum_cardinality + 1 > m->u->capacity){
+
+        m->u->capacity = m->u->capacity*2 + 1;
+        m->u->elements = allocate_or_resize(m->u->elements, m->u->capacity*sizeof(Universum_elements));
+        if (m->u->elements = NULL)
+            return FALSE;
+    }
+    strcpy(m->u->elements[idx].element, element);
+    (m->u->universum_cardinality)++;
+    return TRUE;
+}
+int load_universum(FILE *file, Main *m){
+    char element[31];
+    int idx = 0; // idx = m->u->universum_cardinality ????? mam pocit ze hej
+    int element_len = 0;
+
+    character = getc(file);
+
+    while (character != '\n' && character != EOF){
+        if (element_len > 29){
+            fprintf(stderr,"ERROR: Element defined in universe longer than 30 characters!");
+            return -1;
+        }
+        if (character != ' '){
+            element[element_len++] = character;
+        }
+        if (character == ' '){
+            element[element_len] = '\0';
+            uni_add_element(m, element, idx);
+            if (m->u->elements[idx] == NULL){
+                fprintf(stderr, "ERROR: Memory allocation failure...");
+                return -1; 
+            }
+            idx++;
+            strcpy(element, "");
+        }
+        character = getc(file);
+    }
     return 1;
 }
 
