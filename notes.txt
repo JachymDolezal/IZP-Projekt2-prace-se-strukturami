@@ -117,3 +117,26 @@ Funkce pro relace
     .
     .
 - polsedni funkce
+
+
+function list
+
+empty
+card
+complement
+union
+intersect
+minus
+subseteq
+subset
+equals
+reflexive
+symmetric
+antisymmetric
+transitive
+function
+domain
+codomain
+injective
+surjective
+bijective

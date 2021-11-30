@@ -394,14 +394,15 @@ int set_add_element(Main *m, int element_index, int idx){
 }
 
 /**
- * @brief 
- * 
- * @param m 
- * @param element 
- * @param idx 
- * @return int 
+ * @brief
+ *
+ * @param m
+ * @param element
+ * @param idx
+ * @return int
  */
 int set_to_index(FILE *file, Main *m){
+
 
     char character = getc(file);
     char element[31];
@@ -438,12 +439,12 @@ int set_to_index(FILE *file, Main *m){
 }
 
 /**
- * @brief 
- * 
- * @param m 
- * @param element 
- * @param idx 
- * @return int 
+ * @brief
+ *
+ * @param m
+ * @param element
+ * @param idx
+ * @return int
  */
 int relation_add_element(Main *m, int element_index, bool isfirst, int idx){
 
@@ -467,12 +468,12 @@ int relation_add_element(Main *m, int element_index, bool isfirst, int idx){
 }
 
 /**
- * @brief 
- * 
- * @param m 
- * @param element 
- * @param idx 
- * @return int 
+ * @brief
+ *
+ * @param m
+ * @param element
+ * @param idx
+ * @return int
  */
 int relation_to_index(FILE *file, Main *m){
 
@@ -525,12 +526,12 @@ int relation_to_index(FILE *file, Main *m){
 }
 
 /**
- * @brief 
- * 
- * @param m 
- * @param element 
- * @param idx 
- * @return int 
+ * @brief
+ *
+ * @param m
+ * @param element
+ * @param idx
+ * @return int
  */
 // int function_parser(FILE *file){
 
@@ -540,9 +541,9 @@ int relation_to_index(FILE *file, Main *m){
 // }
 
 /**
- * @brief 
- * 
- * @param m 
+ * @brief
+ *
+ * @param m
  */
 void print_universum(Main *m){
 // U -> element -> mezera until last element -> \n
@@ -601,7 +602,9 @@ void print_relation(Main *m){
 // int relation_line_add(Main *m){
 //     return true;
 // }
-// //relation_line_add
+
+
+//**FUNCTIONS**
 
 /**
  * @brief 
@@ -660,16 +663,16 @@ int main(int argc, char *argv[])
             break;
         }
     }
-    printf("\n****UNIVERSUM:****\ncardinality: %d\n capacity: %d\n",m->u->universum_cardinality, m->u->capacity);
-    for(int i = 0; i < m->u->universum_cardinality; i++){
-        printf("u%d: %s\n", i, m->u->elements[i].element);
-    }
-    for(int i = 0; i < m->s->l->cardinality; i++){
-        printf("S %d: %d\n", i, m->s->l->set_items[i]);
-    }
-    for(int i = 0; i < m->r->l->cardinality; i++){
-        printf("R %d: f %d s %d\n",i,m->r->l->p[i].first, m->r->l->p[i].second);
-    }
+    // printf("\n****UNIVERSUM:****\ncardinality: %d\n capacity: %d\n",m->u->universum_cardinality, m->u->capacity);
+    // for(int i = 0; i < m->u->universum_cardinality; i++){
+    //     printf("u%d: %s\n", i, m->u->elements[i].element);
+    // }
+    // for(int i = 0; i < m->s->l->cardinality; i++){
+    //     printf("S %d: %d\n", i, m->s->l->set_items[i]);
+    // }
+    // for(int i = 0; i < m->r->l->cardinality; i++){
+    //     printf("R %d: f %d s %d\n",i,m->r->l->p[i].first, m->r->l->p[i].second);
+    // }
     //dtor
     main_dtor(m,2);
     fclose(file);
