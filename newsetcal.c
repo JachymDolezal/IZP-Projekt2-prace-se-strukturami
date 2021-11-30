@@ -16,12 +16,12 @@ Last updated 30.11.2021 0:30 a.m.
 #define FALSE 0
 
 /**
- * @brief 
- * 
- * @param m 
- * @param element 
- * @param idx 
- * @return int 
+ * @brief
+ *
+ * @param m
+ * @param element
+ * @param idx
+ * @return int
  */
 
 typedef struct {
@@ -74,11 +74,11 @@ typedef struct{
 
 
 /**
- * @brief 
- * 
- * @param ptr 
- * @param size 
- * @return void* 
+ * @brief
+ *
+ * @param ptr
+ * @param size
+ * @return void*
  */
 void *allocate_or_resize(void *ptr, unsigned int size){
 
@@ -93,9 +93,9 @@ void *allocate_or_resize(void *ptr, unsigned int size){
 
 /**
  * @brief Set the ctor object
- * 
- * @param line 
- * @return Set_line* 
+ *
+ * @param line
+ * @return Set_line*
  */
 Set_line *set_ctor(int line){
 
@@ -110,10 +110,10 @@ Set_line *set_ctor(int line){
 }
 
 /**
- * @brief 
- * 
- * @param line 
- * @return Relation_line* 
+ * @brief
+ *
+ * @param line
+ * @return Relation_line*
  */
 Relation_line *relation_ctor(int line){
 
@@ -130,10 +130,10 @@ Relation_line *relation_ctor(int line){
 }
 
 /**
- * @brief 
- * 
- * @param m 
- * @return int 
+ * @brief
+ *
+ * @param m
+ * @return int
  */
 int init_universum(Main *m){
     m->u->capacity = 1;
@@ -147,10 +147,10 @@ int init_universum(Main *m){
 }
 
 /**
- * @brief 
- * 
- * @param m 
- * @return int 
+ * @brief
+ *
+ * @param m
+ * @return int
  */
 int init_set(Main *m){
     m->s->line_capacity = 1;
@@ -164,10 +164,10 @@ int init_set(Main *m){
 }
 
 /**
- * @brief 
- * 
- * @param m 
- * @return int 
+ * @brief
+ *
+ * @param m
+ * @return int
  */
 int init_relation(Main *m){
     m->r->l = malloc(sizeof(Relation_line));
@@ -180,10 +180,10 @@ int init_relation(Main *m){
 }
 
 /**
- * @brief 
- * 
- * @param m 
- * @param depth 
+ * @brief
+ *
+ * @param m
+ * @param depth
  */
 void main_dtor(Main *m, int depth){
     if(depth == 3){
@@ -211,9 +211,9 @@ void main_dtor(Main *m, int depth){
 }
 
 /**
- * @brief 
- * 
- * @return Main* 
+ * @brief
+ *
+ * @return Main*
  */
 Main *main_ctor(){
 
@@ -233,7 +233,7 @@ Main *main_ctor(){
         if(m->s->l->set_items == NULL || m->r->l->p  == NULL){
             main_dtor(m, 3);
             return NULL;
-        }   
+        }
         return m;
     }
     else{
@@ -243,10 +243,10 @@ Main *main_ctor(){
 }
 
 /**
- * @brief 
- * 
- * @param file 
- * @return int 
+ * @brief
+ *
+ * @param file
+ * @return int
  */
 int type_check(FILE *file){
     char character = getc(file);
@@ -279,12 +279,12 @@ int type_check(FILE *file){
 }
 
 /**
- * @brief 
- * 
- * @param m 
- * @param element 
- * @param idx 
- * @return int 
+ * @brief
+ *
+ * @param m
+ * @param element
+ * @param idx
+ * @return int
  */
 int uni_add_element(Main *m, char *element, int idx){
     if (m->u->universum_cardinality + 1 > m->u->capacity){
@@ -362,12 +362,12 @@ int is_in_universum(Main *m, char *str){
 }
 
 /**
- * @brief 
- * 
- * @param m 
- * @param element 
- * @param idx 
- * @return int 
+ * @brief
+ *
+ * @param m
+ * @param element
+ * @param idx
+ * @return int
  */
 int set_add_element(Main *m, int element_index, int idx){
     int line_cardinality = m->s->line_cardinality;
@@ -382,7 +382,7 @@ int set_add_element(Main *m, int element_index, int idx){
         }
     }
     //printf("m->s->l[%d].set_items ptr: %p\n", line_cardinality, m->s->l[line_cardinality].set_items);
-    
+
     m->s->l[line_cardinality].set_items[idx] = element_index;
     (m->s->l[line_cardinality].cardinality)++;
     return -1;
