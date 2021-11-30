@@ -3,5 +3,8 @@ S a b c
 S e f g
 R (a b) (d e)
 R (e f) (d e)
+C empty 2 3
+C complement 2 3
+
 
 

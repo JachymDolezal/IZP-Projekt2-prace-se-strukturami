@@ -268,8 +268,7 @@ int type_check(FILE *file){
     }
     if (character == 'C'){
         if(getc(file) == ' ' ){
-            printf("C line!\n");
-            getc(file);
+            return 5;
         }
     }
     if (character == EOF){
@@ -529,12 +528,70 @@ int relation_to_index(FILE *file, Main *m){
  * @param idx
  * @return int
  */
-// int function_parser(FILE *file){
+int function_parser(FILE *file){
+    char temp[31];
+    int index = 0;
+    int character = fgetc(file);
+    temp[index] = character;
+    int func_num = 0;
 
-// //keyword -> space -> num1 -> ifspace -> num 2
+    char functions[19][14] = {
+        //1 input 0-9
+        {"empty"},
+        {"card"},
+        {"complement"},
+        {"reflexive"},
+        {"symmetric"},
+        {"antisymmetric"},
+        {"transitive"},
+        {"function"},
+        {"domain"},
+        {"codomain"},
+        //2 inputs 10-15
+        {"union"},
+        {"intersect"},
+        {"minus"},
+        {"subseteq"},
+        {"subset"},
+        {"equals"},
+        // 3 inputs 16-18
+        {"injective"},
+        {"surjective"},
+        {"bijective"}
+        };
 
+    while(character != ' ' && character != '\n'){
+        temp[index++] = character;
+        character = fgetc(file);
+        if(character == ' '){
+            temp[index] = '\0';
+            for(func_num = 0; func_num < 18; func_num++){
+                if(strcmp(temp,functions[func_num]) == 0){
+                    printf("functionname: %s\n", functions[func_num]);
+                }
+            }
+        }
 
-// }
+    }
+    // if (func_num < 9){
+    //     func_num = 1;
+    //     //1x getc -> input, newline/eof
+    // }
+    // if (func_num > 9 && func_num < 15){
+    //     func_num = 2;
+    //     //input mezera input newline/eof
+    // }
+    // else{
+    //     func_num = 3;
+    //     //input mezera input mezera input newline/eof
+    // }
+    // //keyword -> space -> num1 -> ifspace -> num 2
+    // for (j < func_num){
+    //     getc() input
+    //     getc() medzera,newline, eof
+    // }
+return true;
+}
 
 /**
  * @brief
@@ -675,14 +732,16 @@ int main(int argc, char *argv[]){
             print_relation(m);
             (m->r->line_cardinality)++;
         }
+        if (return_value == 5){
+            function_parser(file);
+        }
         if(!return_value){
             break;
         }
         line_index++;
     }
-    while (1) {
-
-    }
+    // while (1) {
+    // }
 
     main_dtor(m,3);
     fclose(file);

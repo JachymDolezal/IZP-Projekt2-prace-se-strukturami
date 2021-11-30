@@ -7,6 +7,11 @@ TODO pro projekt
 -- Kuchar test + erro handling
     - patching
 
+
+Function parser
+---------------
+
+
 Main
 ----
 
@@ -43,10 +48,10 @@ Done
 
 function list
 -------------
-empty
-card
-complement
-union
+1empty
+1card
+1complement
+1union
 intersect
 minus
 subseteq
