@@ -4,7 +4,7 @@ Authors:
 @Midiros login: xlegne
 @youruncle1 login: xpolia05
 
-Last updated 27.11.2021 2 p.m.
+Last updated 30.11.2021 0:30 a.m.
 */
 
 #include <stdio.h>
@@ -14,6 +14,15 @@ Last updated 27.11.2021 2 p.m.
 
 #define TRUE 1
 #define FALSE 0
+
+/**
+ * @brief 
+ * 
+ * @param m 
+ * @param element 
+ * @param idx 
+ * @return int 
+ */
 
 typedef struct {
     char element[31];
@@ -53,6 +62,7 @@ typedef struct {
 typedef struct {
     Relation_line *l;
     int line_capacity;
+    int line_cardinality;
 } Relations;
 
 typedef struct{
@@ -62,6 +72,14 @@ typedef struct{
 
 } Main;
 
+
+/**
+ * @brief 
+ * 
+ * @param ptr 
+ * @param size 
+ * @return void* 
+ */
 void *allocate_or_resize(void *ptr, unsigned int size){
 
     void *new_arr = realloc(ptr, size);
@@ -73,6 +91,12 @@ void *allocate_or_resize(void *ptr, unsigned int size){
     return new_arr;
 }
 
+/**
+ * @brief Set the ctor object
+ * 
+ * @param line 
+ * @return Set_line* 
+ */
 Set_line *set_ctor(int line){
 
     Set_line *set = malloc(sizeof(Set_line));
@@ -85,6 +109,12 @@ Set_line *set_ctor(int line){
     return set;
 }
 
+/**
+ * @brief 
+ * 
+ * @param line 
+ * @return Relation_line* 
+ */
 Relation_line *relation_ctor(int line){
 
     Relation_line *rel = malloc(sizeof(Relation_line));
@@ -99,7 +129,12 @@ Relation_line *relation_ctor(int line){
     return rel;
 }
 
-
+/**
+ * @brief 
+ * 
+ * @param m 
+ * @return int 
+ */
 int init_universum(Main *m){
     m->u->capacity = 1;
     m->u->universum_cardinality = 0;
@@ -111,7 +146,12 @@ int init_universum(Main *m){
     return 1;
 }
 
-
+/**
+ * @brief 
+ * 
+ * @param m 
+ * @return int 
+ */
 int init_set(Main *m){
     m->s->line_capacity = 1;
     m->s->line_cardinality = 0;
@@ -123,16 +163,28 @@ int init_set(Main *m){
     return 1;
 }
 
-
+/**
+ * @brief 
+ * 
+ * @param m 
+ * @return int 
+ */
 int init_relation(Main *m){
     m->r->l = malloc(sizeof(Relation_line));
     if (m->r->l == NULL)
         return 0;
+    m->r->line_cardinality = 0;
     m->r->line_capacity = 1;
 
     return 1;
 }
 
+/**
+ * @brief 
+ * 
+ * @param m 
+ * @param depth 
+ */
 void main_dtor(Main *m, int depth){
 
     if(depth == 3){
@@ -163,6 +215,11 @@ void main_dtor(Main *m, int depth){
     }
 }
 
+/**
+ * @brief 
+ * 
+ * @return Main* 
+ */
 Main *main_ctor(){
 
     Main *m = malloc(sizeof(Main));
@@ -191,20 +248,12 @@ Main *main_ctor(){
     return NULL;
 }
 
-
-//prints a set
-void set_print(int cardinality, int *array){
-    printf("S ");
-    for (int i = 0; i < cardinality; i++){
-        printf("%d ",array[i]);
-    }
-    printf("\n");
-}
-
-// int d_tor(){
-
-// }
-
+/**
+ * @brief 
+ * 
+ * @param file 
+ * @return int 
+ */
 int type_check(FILE *file){
     char character = getc(file);
 
@@ -220,8 +269,7 @@ int type_check(FILE *file){
     }
     if (character == 'R'){
         if(getc(file) == ' ' ){
-            printf("R line!\n");
-            getc(file);
+            return 4;
         }
     }
     if (character == 'C'){
@@ -237,7 +285,14 @@ int type_check(FILE *file){
     return 1;
 }
 
-
+/**
+ * @brief 
+ * 
+ * @param m 
+ * @param element 
+ * @param idx 
+ * @return int 
+ */
 int uni_add_element(Main *m, char *element, int idx){
     if (m->u->universum_cardinality + 1 > m->u->capacity){
 
@@ -251,7 +306,14 @@ int uni_add_element(Main *m, char *element, int idx){
     return TRUE;
 }
 
-
+/**
+ * @brief 
+ * 
+ * @param m 
+ * @param element 
+ * @param idx 
+ * @return int 
+ */
 int load_universum(FILE *file, Main *m){
     char element[31];
     char character;
@@ -287,6 +349,14 @@ int load_universum(FILE *file, Main *m){
     return 1;
 }
 
+/**
+ * @brief
+ *
+ * @param m
+ * @param element
+ * @param idx
+ * @return int
+ */
 int is_in_universum(Main *m, char *str){
     for (int j = 0; j < (m->u->universum_cardinality); j++){
 
@@ -298,6 +368,14 @@ int is_in_universum(Main *m, char *str){
     return -1;
 }
 
+/**
+ * @brief 
+ * 
+ * @param m 
+ * @param element 
+ * @param idx 
+ * @return int 
+ */
 int set_add_element(Main *m, int element_index, int idx){
 
     int line_cardinality = m->s->line_cardinality;
@@ -315,6 +393,14 @@ int set_add_element(Main *m, int element_index, int idx){
     return -1;
 }
 
+/**
+ * @brief 
+ * 
+ * @param m 
+ * @param element 
+ * @param idx 
+ * @return int 
+ */
 int set_to_index(FILE *file, Main *m){
 
     char character = getc(file);
@@ -351,6 +437,180 @@ int set_to_index(FILE *file, Main *m){
     return 1;
 }
 
+/**
+ * @brief 
+ * 
+ * @param m 
+ * @param element 
+ * @param idx 
+ * @return int 
+ */
+int relation_add_element(Main *m, int element_index, bool isfirst, int idx){
+
+    int ln_car = m->r->line_cardinality;
+    if (m->r->l[ln_car].cardinality + 1 > m->r->l[ln_car].capacity){
+
+        m->r->l[ln_car].capacity = m->r->l->capacity*2 + 1;
+        m->r->l[ln_car].p = allocate_or_resize(m->r->l[ln_car].p, m->r->l->capacity*sizeof(m->r->l[ln_car].p));
+        if((m->r->l[ln_car].p) == NULL){
+            return false;
+        }
+    }
+    if(isfirst){
+        m->r->l[ln_car].p[idx].first = element_index;
+    }
+    if(!isfirst){
+        m->r->l[ln_car].p[idx].second = element_index;
+        (m->r->l[ln_car].cardinality)++;
+    }
+    return -1;
+}
+
+/**
+ * @brief 
+ * 
+ * @param m 
+ * @param element 
+ * @param idx 
+ * @return int 
+ */
+int relation_to_index(FILE *file, Main *m){
+
+    bool first_word_loaded = false;
+    bool second_word_loaded = false;
+    char temp[31];
+    int index = 0;
+    char character;
+    int idx = 0;
+    character = 'd';
+
+    while(character != '\n' && character != EOF){
+        character = getc(file);
+        if(character == '('){
+            while(character != ' '){
+                character = getc(file);
+                if(character != ' ')
+                    temp[index++] = character;
+            }
+            temp[index] = '\0';
+            index = 0;
+            // load first word
+            if((is_in_universum(m,temp)) != -1){
+                relation_add_element(m,is_in_universum(m,temp),1,idx);
+            }
+            strcpy(temp,"");
+            first_word_loaded = true;
+            while(character != ')'){
+                character = getc(file);
+                if(character != ')')
+                    temp[index++] = character;
+            }
+            temp[index] = '\0';
+            index = 0;
+            // load second word
+            if((is_in_universum(m,temp)) != -1){
+                relation_add_element(m,is_in_universum(m,temp),0,idx);
+            }
+            strcpy(temp,"");
+            second_word_loaded = true;
+            if(second_word_loaded && first_word_loaded){
+                idx++;
+                first_word_loaded = false;
+                second_word_loaded = false;
+            }
+        }
+    }
+
+    return 0;
+}
+
+/**
+ * @brief 
+ * 
+ * @param m 
+ * @param element 
+ * @param idx 
+ * @return int 
+ */
+// int function_parser(FILE *file){
+
+// //keyword -> space -> num1 -> ifspace -> num 2
+
+
+// }
+
+/**
+ * @brief 
+ * 
+ * @param m 
+ */
+void print_universum(Main *m){
+// U -> element -> mezera until last element -> \n
+    printf("U ");
+    for(int i = 0 ; i < m->u->universum_cardinality; i++){
+        printf("%s",m->u->elements[i].element);
+        printf(" ");
+    }
+    printf("\n");
+}
+
+/**
+ * @brief
+ *
+ * @param m
+ * @return int
+ */
+void print_set(Main *m){
+
+    int uni_index = 0;
+
+    printf("S ");
+    for(int i = 0; i < m->s->l->cardinality; i++){
+        uni_index = m->s->l->set_items[i];
+        printf("%s ", m->u->elements[uni_index].element);
+
+    }
+    printf("\n");
+}
+
+/**
+ * @brief
+ *
+ * @param m
+ * @return int
+ */
+void print_relation(Main *m){
+    //R ->( -> element1 -> mezera -> element2 ->) -> until last pair -> \n
+
+    int rel_index = 0;
+
+    printf("R ");
+    for(int i = 0; i < m->r->l->cardinality; i++){
+        rel_index = m->r->l->p[i].first;
+        printf("(%s ", m->u->elements[rel_index].element);
+        rel_index = m->r->l->p[i].second;
+        printf("%s) ", m->u->elements[rel_index].element);
+    }
+    printf("\n");
+}
+
+// int set_line_add(Main *m){
+//     return true;
+// }
+
+// int relation_line_add(Main *m){
+//     return true;
+// }
+// //relation_line_add
+
+/**
+ * @brief 
+ * 
+ * @param m 
+ * @param element 
+ * @param idx 
+ * @return int 
+ */
 int main(int argc, char *argv[])
 {
     FILE *file;
@@ -386,9 +646,15 @@ int main(int argc, char *argv[])
        int return_value = type_check(file);
        if (return_value == 2){
            load_universum(file, m);
+           print_universum(m);
        }
        if (return_value == 3){
            set_to_index(file,m);
+           print_set(m);
+       }
+       if (return_value == 4){
+           relation_to_index(file,m);
+           print_relation(m);
        }
         if(!return_value){
             break;
@@ -400,6 +666,9 @@ int main(int argc, char *argv[])
     }
     for(int i = 0; i < m->s->l->cardinality; i++){
         printf("S %d: %d\n", i, m->s->l->set_items[i]);
+    }
+    for(int i = 0; i < m->r->l->cardinality; i++){
+        printf("R %d: f %d s %d\n",i,m->r->l->p[i].first, m->r->l->p[i].second);
     }
     //dtor
     main_dtor(m,2);
