@@ -1,69 +1,20 @@
-
-Steps programu
-
-1. kontrola argumentu
-2. nacteni souboru
-3. malloc pro obsah souboru
-4. kontrola souboru
-5. ulozeni typu:
-    - univerzum
-    - mnoziny/relace
-    - funkce
-6. provedení funkcí na množinách/relacích
-7. prislusny tisk vysledku funkce
-8. ukončení programu
-
-
-Tips
-
-- pouzit malloc pro cely file
-    - uvolnit pri erroru/konci programu
-- indexovat si univerzum
-- univerzum je na jeden radek
-- pouzit getc pro parserovani
-
-
-10/11/2021
-==========
-
-definice
---------
-
-musime udelat array pro univerzum
-
-Array[pocet elementu] -> [int index, str element]
-
-array mnozin
-
-mnozin Array[pocet mnozin] -> [int index, array[prvky]]
-
-array relaci 
-
-Array[pocet relaci] -> [int index, [prvek1, prvek2]]
-
-funkce
-------
-
-vstup 2/1 set/relace
-
-vystup relace/bool
-
-
-postup alokace
---------------
-
-jelikoz nevime jak je dlouhy radek a pocet prvku dopredu tak to musime spocitat a alokovat pamet 
-
-array pres pointer???
-
-
 TODO pro projekt
 ================
 
-FIX
----
 
+-- Func parser
+-- Func test
+-- Kuchar test + erro handling
+    - patching
 
+Main
+----
+
+Funkce pro relace
+-----------------
+injective
+surjective
+bijective
 
 
 
@@ -77,50 +28,21 @@ Done
 - Malloc pro struct set/ univerzum DONE
 - prvky o len 1 v Univerzum a setu DONE
 - Malloc pro vnoreny struct pro set DONE
+- udelat main logiku DONE
 
-Main
-----
+- Pocitani tot pameti a volne pameti DONE
+- Realokace DONE
+- nacitani relaci to index DONE
+- index to relace output DONE
+- malloc pro relaci DONE
+- malloc pro vnoreny array relaci DONE
+- realokace relace DONE
+- uvolneni pameti relace DONE
 
-- udelat main logiku
-
-
-Sets + malloc
---------------
-
-- Pocitani tot pameti a volne pameti
-- Realokace
-
-Relace + malloc
-----------------
-- nacitani relaci to index
-- index to relace output
-- malloc pro relaci
-- malloc pro vnoreny array relaci
-- realokace relace
-- uvolneni pameti relace
-
-- nacitani radku funkci
-
-
-Funkce pro sets
----------------
-- funkce union
-    - empty
-    union
-    subseteq
-- posledni funkce
-
-Funkce pro relace
------------------
-- funkce pro relaci
-    .
-    .
-    .
-- polsedni funkce
 
 
 function list
-
+-------------
 empty
 card
 complement

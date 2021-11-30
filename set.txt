@@ -1,4 +1,7 @@
-U hello hey bye cya
-S hello bye
-R (hello bye) (hey cya)
-C
+U a b c d e f g
+S a b c
+S e f g
+R (a b) (d e)
+R (e f) (d e)
+
+

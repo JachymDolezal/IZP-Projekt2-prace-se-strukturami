@@ -186,23 +186,18 @@ int init_relation(Main *m){
  * @param depth 
  */
 void main_dtor(Main *m, int depth){
-
     if(depth == 3){
         //depth 3
-        for(int i = m->s->line_capacity; i >= 0; i--){
+        for(int i = m->s->line_cardinality-1; i >= 0; i--){
             free(m->s->l[i].set_items);
         }
-        for(int j = m->r->line_capacity; j >= 0; j--){
+        for(int j = m->r->line_cardinality-1; j >= 0; j--){
             free(m->r->l[j].p);
         }
     }
     if(depth >= 2){
-        for (int i = m->s->line_capacity; i >= 0; i--){
-            free(m->s[i].l);
-        }
-        for (int i = m->r->line_capacity; i >= 0; i--){
-            free(m->r[i].l);
-        }
+        free(m->r->l);
+        free(m->s->l);
         free(m->u->elements);
     }
     if(depth >= 1){
@@ -233,18 +228,17 @@ Main *main_ctor(){
         return NULL;
     }
     if (init_universum(m) && init_set(m) && init_relation(m)){
+        m->s->l->set_items = allocate_or_resize(m->s->l->set_items,sizeof(Set_line));
+        m->r->l->p = allocate_or_resize(m->r->l->p,sizeof(Pairs));
+        if(m->s->l->set_items == NULL || m->r->l->p  == NULL){
+            main_dtor(m, 3);
+            return NULL;
+        }   
         return m;
     }
     else{
         main_dtor(m, 2);
     }
-
-    m->s->l->set_items = allocate_or_resize(m->s->l->set_items,sizeof(Set_line));
-    m->r->l->p = allocate_or_resize(m->r->l->p,sizeof(Pairs));
-    if(m->s->l->set_items == NULL || m->r->l->p  == NULL){
-        main_dtor(m, 3);
-    }
-
     return NULL;
 }
 
@@ -377,19 +371,21 @@ int is_in_universum(Main *m, char *str){
  * @return int 
  */
 int set_add_element(Main *m, int element_index, int idx){
-
     int line_cardinality = m->s->line_cardinality;
-
-    if (m->s->l->cardinality + 1 > m->s->l->capacity){
-
-        m->s->l->capacity = m->s->l->capacity*2 + 1;
-        m->s->l->set_items = allocate_or_resize(m->s->l->set_items, m->s->l->capacity*sizeof(int));
-        if((m->u->elements) == NULL){
+    //printf("line cardinality :%d\n", line_cardinality);
+    //printf("m->s->l[%d].cardinality: %d\n",line_cardinality, m->s->l[line_cardinality].cardinality);
+    if (m->s->l[line_cardinality].cardinality + 1 > m->s->l[line_cardinality].capacity){
+        m->s->l[line_cardinality].capacity = m->s->l[line_cardinality].capacity*2 + 1;
+        m->s->l[line_cardinality].set_items = allocate_or_resize(m->s->l[line_cardinality].set_items, m->s->l[line_cardinality].capacity*sizeof(int));
+        if((m->s->l[line_cardinality].set_items) == NULL){
+            fprintf(stderr, "Memory for set could not be allocated\n");
             return false;
         }
     }
+    //printf("m->s->l[%d].set_items ptr: %p\n", line_cardinality, m->s->l[line_cardinality].set_items);
+    
     m->s->l[line_cardinality].set_items[idx] = element_index;
-    (m->s->l->cardinality)++;
+    (m->s->l[line_cardinality].cardinality)++;
     return -1;
 }
 
@@ -449,10 +445,10 @@ int set_to_index(FILE *file, Main *m){
 int relation_add_element(Main *m, int element_index, bool isfirst, int idx){
 
     int ln_car = m->r->line_cardinality;
-    if (m->r->l[ln_car].cardinality + 1 > m->r->l[ln_car].capacity){
 
+    if (m->r->l[ln_car].cardinality + 1 > m->r->l[ln_car].capacity){
         m->r->l[ln_car].capacity = m->r->l->capacity*2 + 1;
-        m->r->l[ln_car].p = allocate_or_resize(m->r->l[ln_car].p, m->r->l->capacity*sizeof(m->r->l[ln_car].p));
+        m->r->l[ln_car].p = allocate_or_resize(m->r->l[ln_car].p, m->r->l[ln_car].capacity*sizeof(m->r->l[ln_car].p));
         if((m->r->l[ln_car].p) == NULL){
             return false;
         }
@@ -564,10 +560,11 @@ void print_universum(Main *m){
 void print_set(Main *m){
 
     int uni_index = 0;
+    int line_cardinality = m->s->line_cardinality;
 
     printf("S ");
-    for(int i = 0; i < m->s->l->cardinality; i++){
-        uni_index = m->s->l->set_items[i];
+    for(int i = 0; i < m->s->l[line_cardinality].cardinality; i++){
+        uni_index = m->s->l[line_cardinality].set_items[i];
         printf("%s ", m->u->elements[uni_index].element);
 
     }
@@ -580,48 +577,71 @@ void print_set(Main *m){
  * @param m
  * @return int
  */
+
 void print_relation(Main *m){
     //R ->( -> element1 -> mezera -> element2 ->) -> until last pair -> \n
 
     int rel_index = 0;
+    int line_cardinality = m->r->line_cardinality;
 
     printf("R ");
-    for(int i = 0; i < m->r->l->cardinality; i++){
-        rel_index = m->r->l->p[i].first;
+    for(int i = 0; i < m->r->l[line_cardinality].cardinality; i++){
+        rel_index = m->r->l[line_cardinality].p[i].first;
         printf("(%s ", m->u->elements[rel_index].element);
-        rel_index = m->r->l->p[i].second;
+        rel_index = m->r->l[line_cardinality].p[i].second;
         printf("%s) ", m->u->elements[rel_index].element);
     }
     printf("\n");
 }
 
-// int set_line_add(Main *m){
-//     return true;
-// }
+int relation_line_add(Main *m, int line_index){
+    int line_cardinality = m->r->line_cardinality;
 
-// int relation_line_add(Main *m){
-//     return true;
-// }
+    if (m->r->line_cardinality + 1 > m->r->line_capacity){
+        m->r->line_capacity = m->r->line_capacity*2 + 1;
+        m->r->l = allocate_or_resize(m->r->l, m->r->line_capacity*sizeof(Relation_line));
+        if(m->r->l == NULL){
+            fprintf(stderr, "Memory could not be allocated\n");
+            return -1;
+        }
+    }
+    m->r->l[line_cardinality].line_index = line_index;
+    //set_ctor(line_index);
 
+    return true;
+}
 
-//**FUNCTIONS**
+int set_line_add(Main *m, int line_index){
+    int line_cardinality = m->s->line_cardinality;
 
+    if (m->s->line_cardinality + 1 > m->s->line_capacity){
+        m->s->line_capacity = m->s->line_capacity*2 + 1;
+        m->s->l = allocate_or_resize(m->s->l, m->s->line_capacity*sizeof(Set_line));
+        if(m->s->l == NULL){
+            fprintf(stderr, "Memory could not be allocated\n");
+            return -1;
+        }
+    }
+    m->s->l[line_cardinality].line_index = line_index;
+    //set_ctor(line_index);
+
+    return true;
+}
 /**
- * @brief 
- * 
- * @param m 
- * @param element 
- * @param idx 
- * @return int 
+ * @brief
+ *
+ * @param m
+ * @param element
+ * @param idx
+ * @return int
  */
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]){
     FILE *file;
 
     printf("argc:%d argv[%d]: %s\n",argc,1,argv[1]);
 
     char *filename = argv[1];
-
+    int line_index = 0;
     file = fopen(filename, "r");
 
     if(file == NULL){
@@ -637,44 +657,34 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    //if typecheck(file) == 'U'
-    //uniload;
-    //else fail;
-
-    //uni_set_created
-
-    // setsl[] []
-    //while
     while(1){
-       int return_value = type_check(file);
-       if (return_value == 2){
-           load_universum(file, m);
-           print_universum(m);
-       }
-       if (return_value == 3){
-           set_to_index(file,m);
-           print_set(m);
-       }
-       if (return_value == 4){
-           relation_to_index(file,m);
-           print_relation(m);
-       }
+        int return_value = type_check(file);
+        if (return_value == 2){
+            load_universum(file, m);
+            print_universum(m);
+        }
+        if (return_value == 3){
+            set_line_add(m,line_index);
+            set_to_index(file,m);
+            print_set(m);
+            (m->s->line_cardinality)++;
+        }
+        if (return_value == 4){
+            relation_line_add(m,line_index);
+            relation_to_index(file,m);
+            print_relation(m);
+            (m->r->line_cardinality)++;
+        }
         if(!return_value){
             break;
         }
+        line_index++;
     }
-    // printf("\n****UNIVERSUM:****\ncardinality: %d\n capacity: %d\n",m->u->universum_cardinality, m->u->capacity);
-    // for(int i = 0; i < m->u->universum_cardinality; i++){
-    //     printf("u%d: %s\n", i, m->u->elements[i].element);
-    // }
-    // for(int i = 0; i < m->s->l->cardinality; i++){
-    //     printf("S %d: %d\n", i, m->s->l->set_items[i]);
-    // }
-    // for(int i = 0; i < m->r->l->cardinality; i++){
-    //     printf("R %d: f %d s %d\n",i,m->r->l->p[i].first, m->r->l->p[i].second);
-    // }
-    //dtor
-    main_dtor(m,2);
+    while (1) {
+
+    }
+
+    main_dtor(m,3);
     fclose(file);
     return 0;
 }
