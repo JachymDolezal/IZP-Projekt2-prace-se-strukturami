@@ -2,8 +2,10 @@ TODO pro projekt
 ================
 
 
--- Func parser
+
 -- Func test
+-- func parser + func_switch rework
+-- save_as_set();
 -- Kuchar test + erro handling
     - patching
 

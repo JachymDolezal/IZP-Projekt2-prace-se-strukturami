@@ -1,3 +1,6 @@
-U hello bye hi
-S bye hi
-R (hello bye) (bye hi)
+U hi bye hello mom dad son
+S mom dad son
+S mom dad
+R (hi bye) (hello bye)
+S hi bye
+C subseteq 2 3

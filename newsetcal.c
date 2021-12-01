@@ -1,7 +1,7 @@
 /*
 Authors:
 @FrodoCZE login: xdolez0c
-@Midiros login: xlegne
+@Midiros login: xlegne00
 @youruncle1 login: xpolia05
 
 Last updated 30.11.2021 0:30 a.m.
@@ -72,6 +72,7 @@ typedef struct{
 
 } Main;
 
+void print_set(Main *m, int cardinality, int *set);
 
 /**
  * @brief
@@ -187,6 +188,7 @@ int init_relation(Main *m){
  */
 void main_dtor(Main *m, int depth){
     if(depth == 3){
+
         //depth 3
         for(int i = m->s->line_cardinality-1; i >= 0; i--){
             free(m->s->l[i].set_items);
@@ -352,9 +354,9 @@ int load_universum(FILE *file, Main *m){
  */
 int is_in_universum(Main *m, char *str){
     for (int j = 0; j < (m->u->universum_cardinality); j++){
-
         if (!(strcmp(str, m->u->elements[j].element))){
             return j;
+
         }
     }
     //not found
@@ -459,6 +461,7 @@ int relation_add_element(Main *m, int element_index, bool isfirst, int idx){
         m->r->l[ln_car].p[idx].second = element_index;
         (m->r->l[ln_car].cardinality)++;
     }
+
     return -1;
 }
 
@@ -515,10 +518,177 @@ int relation_to_index(FILE *file, Main *m){
                 second_word_loaded = false;
             }
         }
+ 
     }
 
     return 0;
 }
+
+int set_find_index(Main *m, int line_index){
+
+    for (int i = 0; i < m->s->line_cardinality; i++){
+        if(m->s->l[i].line_index == line_index)
+            return i;
+    }
+    return -1;
+}
+
+void is_empty(Main *m,int line_index){
+    printf("%s\n", m->s->l[line_index].cardinality > 0 ? "false" : "true");
+}
+
+// Funkce printuje prunik dvou mnozin.
+void intersect(Main *m, int set_line_index_a, int set_line_index_b)
+{
+    int i, h;
+    // int printed_elements = 0;
+    int intersect_cardinality = 0;
+    int *intersect = malloc(sizeof(int) * m->s->l[set_line_index_a].cardinality);
+    for (i = 0; i < m->s->l[set_line_index_a].cardinality; ++i)
+    {
+        // printf("%d", i);
+        int a_index = m->s->l[set_line_index_a].set_items[i];
+        // printf("Tohle je a_index = %d\n", a_index);
+
+        // printf("%c", a_index);
+        for (h = 0; h < m->s->l[set_line_index_b].cardinality; h++)
+        {
+
+            int b_index = m->s->l[set_line_index_b].set_items[h];
+            // printf("Tohle je b_index = %d\n", b_index);
+            if (a_index == b_index)
+            {
+                intersect[intersect_cardinality] = a_index;
+                // printf("%c", set_2[h]);
+                intersect_cardinality++;
+                continue;
+            }
+        }
+    }
+    // for (printed_elements = 0; printed_elements < intersect_cardinality; printed_elements++)
+    // {
+    //     printf("%d\n", intersect[printed_elements]);
+    // }
+    print_set(m, intersect_cardinality, intersect);
+    free(intersect);
+}
+
+void do_complement(Main *m, int line_index){
+    bool found;
+    printf("S ");
+    for (int i = 0; i < m->u->universum_cardinality; i++){
+        found = false;
+        for (int j = 0; j < m->s->l[line_index].cardinality; j++){
+            if (m->s->l[line_index].set_items[j] == i)
+                found = true;
+        }
+        if (!found)
+            printf("%s ", m->u->elements[i].element);
+    }
+}
+
+/**
+ * @brief 
+ * 
+ * @param m 
+ * @param set_index_a 
+ * @param set_index_b 
+ */
+void do_union(Main *m, int set_line_index_a, int set_line_index_b){
+    bool in_union;
+    int cardinality_a = m->s->l[set_line_index_a].cardinality;
+    int cardinality_b = m->s->l[set_line_index_b].cardinality;
+    // printf("cardinlity_a: %d\n", cardinality_a);
+    // printf("cardinality_b: %d\n",cardinality_b);
+    int *union_set = malloc((cardinality_a)+(cardinality_b)*sizeof(int)); //creates a temp array of a maximum union of the two arrays.
+    int i;
+    int union_cardinality = 0;
+
+    for(i = 0; i < cardinality_a; i++){
+        union_set[i] = m->s->l[set_line_index_a].set_items[i];
+        union_cardinality++;
+    }
+    for(int j = 0; j < cardinality_b; j++){
+        in_union = false;
+        for(int k = 0; k < union_cardinality; k++){
+            if(m->s->l[set_line_index_b].set_items[j] == union_set[k]){
+                in_union = true;
+            }
+        }
+        if(!in_union){
+            union_set[i] = m->s->l[set_line_index_b].set_items[j];
+            union_cardinality++;
+            i++;
+        }
+    }
+    printf("union_cardinality%d\n",union_cardinality);
+    print_set(m, union_cardinality,union_set); //outputs the result
+    free(union_set);
+
+}
+
+void minus(Main *m, int line_index_a, int line_index_b){
+    int cardinality_a = m->s->l[line_index_a].cardinality;
+    int cardinality_b = m->s->l[line_index_b].cardinality;
+    bool element_found;
+    int *difference_set = malloc((cardinality_a+cardinality_b)*sizeof(int));
+    int diff_idx = 0;
+
+    for (int i = 0; i < cardinality_a; i++){
+        element_found = false;
+        for (int j = 0; j < cardinality_b; j++){
+            if( m->s->l[line_index_a].set_items[i] == m->s->l[line_index_b].set_items[j]){
+                element_found = true;
+                break;
+            }
+        }
+        if (!element_found){
+            difference_set[diff_idx] = m->s->l[line_index_a].set_items[i];
+            diff_idx++;
+        }
+    }
+    print_set(m, diff_idx, difference_set);
+    free(difference_set);
+}
+
+void subset(Main *m, int set_index_a, int set_index_b){
+
+    int cardinality_a = m->s->l[set_index_a].cardinality;
+    int cardinality_b = m->s->l[set_index_b].cardinality;
+
+    if (subseteq(m, set_index_a, set_index_b) && (cardinality_a < cardinality_b))
+        return true;
+    return false;
+}
+
+bool subseteq(Main *m, int line_index_a, int line_index_b){
+    int cardinality_a = m->s->l[line_index_a].cardinality;
+    int cardinality_b = m->s->l[line_index_b].cardinality;
+
+    bool element_found;
+    for(int i = 0; i < cardinality_a; i++){
+        element_found = false;
+        for(int j = 0; j < cardinality_b; j++){
+            if(m->s->l[line_index_a].set_items[i] == m->s->l[line_index_b].set_items[j]){
+                element_found = true;
+                break;
+            }
+        }
+        if (!element_found){
+            printf("false\n");
+            return false;
+        }
+    }
+    printf("true\n");
+    return true;
+}
+
+
+
+// void equals(Main *m, int ){
+//     if(subseteq)
+// }
+//mame podmnoziny X,Y -> ak X je podmnozinou Y  a Y je podmnozinou X => X=Y
 
 /**
  * @brief
@@ -528,12 +698,77 @@ int relation_to_index(FILE *file, Main *m){
  * @param idx
  * @return int
  */
-int function_parser(FILE *file){
+
+int function_call(Main *m, char* func_name, int par1, int par2, int par3){
+    printf("%p %s %d %d %d\n", m, func_name, par1, par2, par3);
+    if(strcmp("empty",func_name) == 0){
+        par1 = set_find_index(m,par1);
+        // printf("is_empty par1; %d", par1);
+        is_empty(m ,par1);
+    }
+    if(strcmp("card",func_name) == 0){
+        printf("card");
+    }
+    if(strcmp("complement",func_name) == 0){
+        par1 = set_find_index(m, par1);
+        printf("complement par1: %d", par1);
+        do_complement(m, par1);
+    }
+    if(strcmp("symmetric",func_name) == 0){
+        printf("symmetric");
+    }
+    if(strcmp("transitive",func_name) == 0){
+        printf("transitive");
+    }
+    if(strcmp("function",func_name) == 0){
+        printf("function");
+    }
+    if(strcmp("domain",func_name) == 0){
+        printf("domain");
+    }
+    if(strcmp("intersect",func_name) == 0){
+        par1 = set_find_index(m,par1);
+        par2 = set_find_index(m,par2);
+        intersect(m, par1, par2);
+    }
+    if(strcmp("union",func_name) == 0){
+        par1 = set_find_index(m, par1);
+        par2 = set_find_index(m, par2);
+        do_union(m,par1,par2);
+    }
+    if(strcmp("minus",func_name) == 0){
+        par1 = set_find_index(m, par1);
+        par2 = set_find_index(m, par2);
+        minus(m, par1, par2);
+    }
+    if(strcmp("subseteq",func_name) == 0){
+        printf("calling card");
+    }
+    if(strcmp("subset",func_name) == 0){
+        printf("calling card");
+    }
+    if(strcmp("equals",func_name) == 0){
+        printf("calling card");
+    }
+    if(strcmp("injective",func_name) == 0){
+        printf("calling card");
+    }
+    if(strcmp("surjective",func_name) == 0){
+        printf("calling card");
+    }
+    if(strcmp("bijective",func_name) == 0){
+        printf("calling card");
+    }
+    return true;
+}
+
+int function_parser(FILE *file, Main *m){
     char temp[31];
     int index = 0;
     int character = fgetc(file);
     temp[index] = character;
     int func_num = 0;
+    int firstnum = 0, secondnum = 0, thirdnum = 0;
 
     char functions[19][14] = {
         //1 input 0-9
@@ -559,38 +794,49 @@ int function_parser(FILE *file){
         {"surjective"},
         {"bijective"}
         };
-
     while(character != ' ' && character != '\n'){
         temp[index++] = character;
+        // printf("char: %c\n",character);
         character = fgetc(file);
         if(character == ' '){
             temp[index] = '\0';
+            // printf("temp: %s\n",temp);
             for(func_num = 0; func_num < 18; func_num++){
                 if(strcmp(temp,functions[func_num]) == 0){
-                    printf("functionname: %s\n", functions[func_num]);
+                    // printf("funcnum:%d\n", func_num);
+                    // printf("functionname: %s\n", functions[func_num]);
+                    break;
                 }
             }
+            if(strcmp(temp, functions[func_num]) != 0){
+                fprintf(stderr, "ERROR: Unknown function name\n");
+                return -1;
+            }
         }
-
     }
-    // if (func_num < 9){
-    //     func_num = 1;
-    //     //1x getc -> input, newline/eof
-    // }
-    // if (func_num > 9 && func_num < 15){
-    //     func_num = 2;
-    //     //input mezera input newline/eof
-    // }
-    // else{
-    //     func_num = 3;
-    //     //input mezera input mezera input newline/eof
-    // }
-    // //keyword -> space -> num1 -> ifspace -> num 2
-    // for (j < func_num){
-    //     getc() input
-    //     getc() medzera,newline, eof
-    // }
-return true;
+    //firstnum + space
+    character = fgetc(file);
+    if(character != '\n')
+    firstnum = (int)character - '0';
+    character = fgetc(file);
+
+    if(func_num > 9){
+        character = getc(file);
+        if(character != '\n'){
+            secondnum = (int)character - '0';
+        }
+        character = getc(file);
+        if(func_num > 15){
+            character = getc(file);
+            if(character != '\n')
+                thirdnum = (int)character - '0';
+            character = getc(file);
+        }
+    }
+
+    // printf("function: %s num1: %c, num2:%c, num3: %c\n",functions[func_num],firstnum,secondnum,thirdnum);
+    function_call(m,functions[func_num],firstnum,secondnum,thirdnum);
+    return 0;
 }
 
 /**
@@ -614,7 +860,7 @@ void print_universum(Main *m){
  * @param m
  * @return int
  */
-void print_set(Main *m){
+void print_set_old(Main *m){
 
     int uni_index = 0;
     int line_cardinality = m->s->line_cardinality;
@@ -624,6 +870,14 @@ void print_set(Main *m){
         uni_index = m->s->l[line_cardinality].set_items[i];
         printf("%s ", m->u->elements[uni_index].element);
 
+    }
+    printf("\n");
+}
+
+void print_set(Main *m, int cardinality, int *set){
+    printf("S ");
+    for (int i = 0; i < cardinality; i++){
+        printf("%s ", m->u->elements[set[i]].element);
     }
     printf("\n");
 }
@@ -692,13 +946,16 @@ int set_line_add(Main *m, int line_index){
  * @param idx
  * @return int
  */
+// **** FUNCTIONS ************************
+
+
 int main(int argc, char *argv[]){
     FILE *file;
 
-    printf("argc:%d argv[%d]: %s\n",argc,1,argv[1]);
+    printf("argc:%d argv[%d]: %s\n\n",argc,1,argv[1]);
 
     char *filename = argv[1];
-    int line_index = 0;
+    int line_index = 1;
     file = fopen(filename, "r");
 
     if(file == NULL){
@@ -718,12 +975,13 @@ int main(int argc, char *argv[]){
         int return_value = type_check(file);
         if (return_value == 2){
             load_universum(file, m);
+            //save_as_set();
             print_universum(m);
         }
         if (return_value == 3){
             set_line_add(m,line_index);
             set_to_index(file,m);
-            print_set(m);
+            print_set_old(m);
             (m->s->line_cardinality)++;
         }
         if (return_value == 4){
@@ -733,7 +991,7 @@ int main(int argc, char *argv[]){
             (m->r->line_cardinality)++;
         }
         if (return_value == 5){
-            function_parser(file);
+            function_parser(file, m);
         }
         if(!return_value){
             break;
