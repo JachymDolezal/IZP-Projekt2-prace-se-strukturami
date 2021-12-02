@@ -736,46 +736,353 @@ void symmetric(Main *m, int line_index){
     printf("true\n");
 }
 
-int transitive(Main *m, int line_index){
+// int transitive(Main *m, int line_index){
 
-    int rel_cardinality = m->r->l[line_index].cardinality;
-    int a1,b1,a2,b2,c1,c2;
-    bool found_transitive;
+//     int rel_cardinality = m->r->l[line_index].cardinality;
+//     int a1,b1,a2,b2,c1,c2;
+//     bool found_transitive;
 
-    for (int i = 0; i < rel_cardinality; i++){
-        a1 = m->r->l[line_index].p[i].first;
-        b1 = m->r->l[line_index].p[i].second;
-        found_transitive = false;
+//     for (int i = 0; i < rel_cardinality; i++){
+//         a1 = m->r->l[line_index].p[i].first;
+//         b1 = m->r->l[line_index].p[i].second;
+//         found_transitive = false;
 
-        for (int j = 0; j < rel_cardinality; j++){
-            if (j == i){
+//         for (int j = 0; j < rel_cardinality; j++){
+//             if (j == i){
+//                 continue;
+//             }
+//             b2 = m->r->l[line_index].p[j].first;
+//             if (b2 == b1){
+//                 c1 = m->r->l[line_index].p[j].second;
+
+//                 for (int k = 0; k < rel_cardinality; k++){
+//                     if (k == i || k == j){
+//                         continue;
+//                     }
+//                     a2 = m->r->l[line_index].p[k].first;
+//                     c2 = m->r->l[line_index].p[k].second;
+//                     if (a2 == a1 && c2 == c1){
+//                         found_transitive = true;
+//                     }
+//                 }
+//             }
+//         }
+//         if (!found_transitive){
+//             printf("false\n");
+//             return false;
+//         }
+//     }
+//     printf("true\n");
+//     return true;
+// } 
+
+// * Funkce vraci zdali je relace funkci
+bool is_function(Main *m, int line_index_a)
+{
+    int i, j;
+    bool funkce;
+    int *obor_hodnot = malloc(sizeof(int) * m->r->l[line_index_a].cardinality);
+    int cardinality = m->r->l[line_index_a].cardinality;
+    for (i = 0; i < cardinality; ++i)
+    {
+
+        int y_index = m->r->l[line_index_a].p[i].second;
+
+        // printf("%d toto je X index\n", x_index);
+        for (j = 0; j < cardinality; j++)
+        {
+            funkce = false;
+            int y_index2 = obor_hodnot[j];
+
+            // printf("%d toto je Y index\n", y_index);
+            if (y_index == y_index2)
+            {
+                // printf("shoda\n");
+                funkce = true;
+                break;
+            }
+            if (j < cardinality && y_index != y_index2)
+            {
                 continue;
             }
-            b2 = m->r->l[line_index].p[j].first;
-            if (b2 == b1){
-                c1 = m->r->l[line_index].p[j].second;
+        }
 
-                for (int k = 0; k < rel_cardinality; k++){
-                    if (k == i || k == j){
-                        continue;
-                    }
-                    a2 = m->r->l[line_index].p[k].first;
-                    c2 = m->r->l[line_index].p[k].second;
-                    if (a2 == a1 && c2 == c1){
-                        found_transitive = true;
+        if (funkce == true)
+        {
+            printf("Relace neni funkce\n");
+
+            return false;
+        }
+        obor_hodnot[i] = y_index;
+    }
+
+    printf("Relace je funkce\n");
+    return true;
+}
+
+//* Funkce vraci zda-li je relace reflexivni.
+bool is_reflexive(Main *m, int line_index_a)
+{
+    int i, j, k, l, h, f;
+    int cardinality = m->r->l[line_index_a].cardinality;
+    int *reflex = malloc(sizeof(int) * cardinality);
+    int index = 0;
+
+    for (i = 0; i < cardinality; i++)
+    {
+        int x_index = m->r->l[line_index_a].p[i].first;
+        int y_index = m->r->l[line_index_a].p[i].second;
+
+        // printf("%d\n", x_index);
+        // printf("%d\n", y_index);
+        // printf("%d toto je X index\n", x_index);
+        for (j = 0; j < cardinality; j++)
+        {
+
+            // printf("%d toto je Y index\n", y_index);
+            if (x_index == y_index)
+            {
+                // printf("shoda\n");
+
+                for (k = 0; k <= index; k++)
+                {
+                    if (x_index == reflex[k])
+                        break;
+                    if (k == index)
+                    {
+                        reflex[index] = x_index;
+                        // printf("%d\n", reflex[index]);
+
+                        index++;
+                        break;
                     }
                 }
+                // printf("shoda\n");
+                // reflexivity = true;
             }
         }
-        if (!found_transitive){
-            printf("false\n");
+    }
+    for (l = 0; l < cardinality; l++)
+    {
+        int check = m->r->l[line_index_a].p[l].first;
+        int backwards_check = m->r->l[line_index_a].p[l].second;
+        // printf("Check int: %d\n", check);
+        for (h = 0; h <= index; h++)
+        {
+            // printf("CISLO DPC :%d\n", h);
+            // printf("Index num:%d\n", reflex[h]);
+
+            if (check == reflex[h] && h <= index)
+            {
+                // printf("Shooda\n");
+                break;
+            }
+            if (check != reflex[h] && h == index)
+            {
+                printf("Relace neni reflexivni\n");
+                free(reflex);
+                return false;
+            }
+        }
+        for (f = 0; f <= index; f++)
+        {
+            if (backwards_check == reflex[f] && f <= index)
+            {
+                // printf("Shooda\n");
+                break;
+            }
+            if (backwards_check != reflex[h] && f == index)
+            {
+                printf("Relace neni reflexivni\n");
+                free(reflex);
+                return false;
+            }
+        }
+    }
+    free(reflex);
+    printf("Relace je reflexivni\n");
+    return true;
+}
+
+//* Funkce vraci zda-li je relace asymetricka.
+bool is_asymmetric(Main *m, int line_index_a)
+{
+    int i, j;
+    bool asymmetricity_x;
+    int cardinality = m->r->l[line_index_a].cardinality;
+    for (i = 0; i < cardinality; i++)
+    {
+        int x_index = m->r->l[line_index_a].p[i].first;
+        int y_index = m->r->l[line_index_a].p[i].second;
+
+        // printf("%d toto je X index\n", x_index);
+        for (j = 0; j < cardinality; j++)
+        {
+            asymmetricity_x = false;
+            int x_index2 = m->r->l[line_index_a].p[j].second;
+            int y_index2 = m->r->l[line_index_a].p[j].first;
+
+            // printf("%d toto je Y index\n", y_index);
+            if (x_index == x_index2 && y_index == y_index2)
+            {
+                // printf("shoda\n");
+                asymmetricity_x = true;
+                break;
+            }
+            if (j < cardinality && (x_index != x_index2 || y_index != y_index2))
+            {
+                continue;
+            }
+        }
+        if (asymmetricity_x == true)
+        {
+            printf("Relace neni asymetricka\n");
             return false;
         }
     }
-    printf("true\n");
-    return true;
-} 
 
+    printf("Relace je asymetricka\n");
+    return true;
+}
+
+// //* Funkce vraci zda-li je relace tranzitivni.
+// bool is_transitive(Main *m, int line_index_a)
+// {
+//     int i, j;
+//     bool transitivity_x;
+//     int cardinality = m->r->l[line_index_a].cardinality;
+//     for (i = 0; i < cardinality; i++)
+//     {
+//         int x_index = m->r->l[line_index_a].p[i].first;
+//         // printf("%d toto je X index\n", x_index);
+//         for (j = 0; j < cardinality; j++)
+//         {
+//             transitivity_x = false;
+//             int y_index = m->r->l[line_index_a].p[j].second;
+//             // printf("%d toto je Y index\n", y_index);
+//             if (x_index == y_index)
+//             {
+//                 // printf("shoda\n");
+//                 transitivity_x = true;
+//                 break;
+//             }
+//             if (j < cardinality && x_index != y_index)
+//             {
+//                 continue;
+//             }
+//         }
+//         if (j == cardinality && transitivity_x == false)
+//         {
+//             printf("Relace neni tranzitivni\n");
+//             return false;
+//         }
+//     }
+
+//     int k, l;
+//     bool transitivity_y;
+//     for (k = 0; k < cardinality; ++k)
+//     {
+//         int x_index = m->r->l[line_index_a].p[k].first;
+//         // printf("%d toto je X index\n", x_index);
+//         for (l = 0; l < cardinality; l++)
+//         {
+//             transitivity_y = false;
+//             int y_index = m->r->l[line_index_a].p[l].second;
+//             // printf("%d toto je Y index\n", y_index);
+//             if (x_index == y_index)
+//             {
+//                 // printf("shoda\n");
+//                 transitivity_y = true;
+//                 break;
+//             }
+//             if (l < cardinality && x_index != y_index)
+//             {
+//                 continue;
+//             }
+//         }
+//         if (l == cardinality && transitivity_y == false)
+//         {
+//             printf("Relace neni tranzitivni\n");
+//             return false;
+//         }
+//     }
+//     printf("Relace je tranzitivni\n");
+//     return true;
+// }
+// * Tiskne obor hodnot.
+void codomain(Main *m, int line_index_a)
+{
+    int i, j;
+    int current_element;
+    int index = 1;
+    int cardinality = m->r->l[line_index_a].cardinality;
+    int *obor_hodnot = malloc(sizeof(int) * cardinality);
+    bool shoda;
+
+    for (i = 0; i < cardinality; i++)
+    {
+        shoda = false;
+        // printf("Neco se deje v prvnim cyklu\n");
+        current_element = m->r->l[line_index_a].p[i].second;
+        for (j = 0; j < index; j++)
+        {
+            // printf("Neco se deje v druhem cyklu\n");
+
+            if (obor_hodnot[j] == current_element)
+            {
+                shoda = true;
+                break;
+            }
+        }
+        if (shoda == false)
+        {
+            obor_hodnot[index] = current_element;
+            index++;
+            continue;
+        }
+    }
+
+    print_set(m , index, obor_hodnot);
+
+    free(obor_hodnot);
+}
+// * Tiskne definicni obor.
+
+void domain(Main *m, int line_index_a)
+{
+    int i, j;
+    int current_element;
+    int index = 0;
+    int cardinality = m->r->l[line_index_a].cardinality;
+    int *definicni_obor = malloc(sizeof(int) * cardinality);
+    bool shoda;
+
+    for (i = 0; i < cardinality; i++)
+    {
+        shoda = false;
+        // printf("Neco se deje v prvnim cyklu\n");
+        current_element = m->r->l[line_index_a].p[i].first;
+        for (j = 0; j < index; j++)
+        {
+            // printf("Neco se deje v druhem cyklu\n");
+
+            if (definicni_obor[j] == current_element)
+            {
+                shoda = true;
+                break;
+            }
+        }
+        if (shoda == false)
+        {
+            definicni_obor[index] = current_element;
+            index++;
+            continue;
+        }
+    }
+    print_set(m , index, definicni_obor);
+
+    free(definicni_obor);
+}
 
 
 
@@ -800,25 +1107,38 @@ int function_call(Main *m, char* func_name, int par1, int par2, int par3){
         printf("card");
     }
     if(strcmp("complement",func_name) == 0){
-        par1 = set_find_index(m, par1);
+        par1 = rel_find_index(m, par1);
         do_complement(m, par1);
     }
     if(strcmp("symmetric",func_name) == 0){
         par1 = rel_find_index(m, par1);
         symmetric(m, par1);
     }
+    if(strcmp("asymmetric",func_name) == 0){
+        par1 = rel_find_index(m, par1);
+        is_asymmetric(m, par1);
+    }
     if(strcmp("transitive",func_name) == 0){
         par1 = rel_find_index(m, par1);
         transitive(m, par1);
     }
+    if(strcmp("reflexive",func_name) == 0){
+        par1 = rel_find_index(m, par1);
+        is_reflexive(m, par1);
+    }
     if(strcmp("function",func_name) == 0){
         par1 = rel_find_index(m, par1);
-        printf("function");
+        is_function(m, par1);
     }
     if(strcmp("domain",func_name) == 0){
         par1 = rel_find_index(m, par1);
-        printf("domain");
+        domain(m, par1);
     }
+    if(strcmp("codomain",func_name) == 0){
+        par1 = rel_find_index(m, par1);
+        codomain(m, par1);
+    }
+
     if(strcmp("intersect",func_name) == 0){
         par1 = set_find_index(m,par1);
         par2 = set_find_index(m,par2);
@@ -932,7 +1252,6 @@ int function_parser(FILE *file, Main *m){
             character = getc(file);
         }
     }
-
     // printf("function: %s num1: %c, num2:%c, num3: %c\n",functions[func_num],firstnum,secondnum,thirdnum);
     function_call(m,functions[func_num],firstnum,secondnum,thirdnum);
     return 0;
