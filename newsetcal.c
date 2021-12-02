@@ -651,16 +651,6 @@ void minus(Main *m, int line_index_a, int line_index_b){
     free(difference_set);
 }
 
-void subset(Main *m, int set_index_a, int set_index_b){
-
-    int cardinality_a = m->s->l[set_index_a].cardinality;
-    int cardinality_b = m->s->l[set_index_b].cardinality;
-
-    if (subseteq(m, set_index_a, set_index_b) && (cardinality_a < cardinality_b))
-        return true;
-    return false;
-}
-
 bool subseteq(Main *m, int line_index_a, int line_index_b){
     int cardinality_a = m->s->l[line_index_a].cardinality;
     int cardinality_b = m->s->l[line_index_b].cardinality;
@@ -684,6 +674,22 @@ bool subseteq(Main *m, int line_index_a, int line_index_b){
 }
 
 
+int subset(Main *m, int set_index_a, int set_index_b){
+
+    int cardinality_a = m->s->l[set_index_a].cardinality;
+    int cardinality_b = m->s->l[set_index_b].cardinality;
+
+    if (subseteq(m, set_index_a, set_index_b) && (cardinality_a < cardinality_b)){
+        printf("true\n");
+        return true;
+    }
+
+    printf("true\n");
+    return false;
+}
+
+
+
 
 // void equals(Main *m, int ){
 //     if(subseteq)
@@ -700,7 +706,8 @@ bool subseteq(Main *m, int line_index_a, int line_index_b){
  */
 
 int function_call(Main *m, char* func_name, int par1, int par2, int par3){
-    printf("%p %s %d %d %d\n", m, func_name, par1, par2, par3);
+    // printf("%p %s %d %d %d\n", m, func_name, par1, par2, par3);
+    (void) par3;
     if(strcmp("empty",func_name) == 0){
         par1 = set_find_index(m,par1);
         // printf("is_empty par1; %d", par1);
@@ -711,7 +718,6 @@ int function_call(Main *m, char* func_name, int par1, int par2, int par3){
     }
     if(strcmp("complement",func_name) == 0){
         par1 = set_find_index(m, par1);
-        printf("complement par1: %d", par1);
         do_complement(m, par1);
     }
     if(strcmp("symmetric",func_name) == 0){
@@ -742,7 +748,9 @@ int function_call(Main *m, char* func_name, int par1, int par2, int par3){
         minus(m, par1, par2);
     }
     if(strcmp("subseteq",func_name) == 0){
-        printf("calling card");
+        par1 = set_find_index(m, par1);
+        par2 = set_find_index(m, par2);
+        subseteq(m,par1,par2);
     }
     if(strcmp("subset",func_name) == 0){
         printf("calling card");
@@ -849,6 +857,8 @@ void print_universum(Main *m){
     printf("U ");
     for(int i = 0 ; i < m->u->universum_cardinality; i++){
         printf("%s",m->u->elements[i].element);
+        if(i == m->u->universum_cardinality-1)
+            break;
         printf(" ");
     }
     printf("\n");
@@ -868,7 +878,10 @@ void print_set_old(Main *m){
     printf("S ");
     for(int i = 0; i < m->s->l[line_cardinality].cardinality; i++){
         uni_index = m->s->l[line_cardinality].set_items[i];
-        printf("%s ", m->u->elements[uni_index].element);
+        printf("%s", m->u->elements[uni_index].element);
+        if(i == m->s->l[line_cardinality].cardinality-1)
+            break;
+        printf(" ");
 
     }
     printf("\n");
@@ -900,7 +913,10 @@ void print_relation(Main *m){
         rel_index = m->r->l[line_cardinality].p[i].first;
         printf("(%s ", m->u->elements[rel_index].element);
         rel_index = m->r->l[line_cardinality].p[i].second;
-        printf("%s) ", m->u->elements[rel_index].element);
+        printf("%s)", m->u->elements[rel_index].element);
+        if(i == m->r->l[line_cardinality].cardinality-1)
+            break;
+        printf(" ");
     }
     printf("\n");
 }
@@ -952,7 +968,12 @@ int set_line_add(Main *m, int line_index){
 int main(int argc, char *argv[]){
     FILE *file;
 
-    printf("argc:%d argv[%d]: %s\n\n",argc,1,argv[1]);
+    // printf("argc:%d argv[%d]: %s\n\n",argc,1,argv[1]);
+
+    if(argc > 2){
+        fprintf(stderr,"Only one input is allowed");
+        return EXIT_FAILURE;
+    }
 
     char *filename = argv[1];
     int line_index = 1;
