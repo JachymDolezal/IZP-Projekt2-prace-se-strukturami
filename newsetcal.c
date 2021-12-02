@@ -1104,6 +1104,7 @@ int function_call(Main *m, char* func_name, int par1, int par2, int par3){
         is_empty(m ,par1);
     }
     if(strcmp("card",func_name) == 0){
+        par1 = set_find_index(m,par1);
         printf("card");
     }
     if(strcmp("complement",func_name) == 0){
@@ -1170,13 +1171,25 @@ int function_call(Main *m, char* func_name, int par1, int par2, int par3){
         equals(m,par1,par2);
     }
     if(strcmp("injective",func_name) == 0){
-        printf("calling card");
+        par1 = rel_find_index(m,par1);
+        par2 = set_find_index(m,par2);
+        par3 = set_find_index(m,par3);
+        //injective(m,par1,par2,par3);
+        printf("calling injective");
     }
     if(strcmp("surjective",func_name) == 0){
-        printf("calling card");
+        par1 = rel_find_index(m,par1);
+        par2 = set_find_index(m,par2);
+        par3 = set_find_index(m,par3);
+        //surjective(m,par1,par2,par3);
+        printf("calling surjective");
     }
     if(strcmp("bijective",func_name) == 0){
-        printf("calling card");
+        par1 = rel_find_index(m,par1);
+        par2 = set_find_index(m,par2);
+        par3 = set_find_index(m,par3);
+        //bijective(m,par1,par2,par3);
+        printf("calling bijective");
     }
     return true;
 }
@@ -1312,7 +1325,7 @@ void print_set(Main *m, int cardinality, int *set){
  * @return int
  */
 
-void print_relation_old(Main *m){
+void print_relation(Main *m){
     //R ->( -> element1 -> mezera -> element2 ->) -> until last pair -> \n
 
     int rel_index = 0;
@@ -1330,16 +1343,6 @@ void print_relation_old(Main *m){
     }
     printf("\n");
 }
-
-// void print_relation(Main *m, int cardinality, int**relation ){
-
-//     int rel_index = 0;
-//     printf("R ");
-//     for(int i = 0; i < cardinality ; i++){
-
-//     }
-
-// }
 
 int relation_line_add(Main *m, int line_index){
     int line_cardinality = m->r->line_cardinality;
@@ -1428,7 +1431,7 @@ int main(int argc, char *argv[]){
         if (return_value == 4){
             relation_line_add(m,line_index);
             relation_to_index(file,m);
-            print_relation_old(m);
+            print_relation(m);
             (m->r->line_cardinality)++;
         }
         if (return_value == 5){
