@@ -991,7 +991,7 @@ void print_set(Main *m, int cardinality, int *set){
  * @return int
  */
 
-void print_relation(Main *m){
+void print_relation_old(Main *m){
     //R ->( -> element1 -> mezera -> element2 ->) -> until last pair -> \n
 
     int rel_index = 0;
@@ -1008,6 +1008,16 @@ void print_relation(Main *m){
         printf(" ");
     }
     printf("\n");
+}
+
+void print_relation(Main *m, int cardinality, int**relation ){
+
+    int rel_index = 0;
+    printf("R ");
+    for(int i = 0; i < cardinality ; i++){
+        
+    }
+
 }
 
 int relation_line_add(Main *m, int line_index){
@@ -1097,7 +1107,7 @@ int main(int argc, char *argv[]){
         if (return_value == 4){
             relation_line_add(m,line_index);
             relation_to_index(file,m);
-            print_relation(m);
+            print_relation_old(m);
             (m->r->line_cardinality)++;
         }
         if (return_value == 5){
