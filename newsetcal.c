@@ -1090,12 +1090,25 @@ void domain(Main *m, int line_index_a)
 
 // int injective(Main *m, int rel_line_index, int set_A_line_index, int set_B_line_index){
 //     int rel_cardinality = m->r->l[rel_line_index].cardinality;
-
-//     for(int i = 0 ; i < rel_cardinality; i++){
-//         //checks if first is in set A
-//         //checks if second is in set B
-
+//     int set_A_cardinality = m->s->l[set_A_line_index].cardinality;
+//     int set_B_cardinality = m->s->l[set_B_line_index].cardinality;
+//     int index = 0;
+//     int match = 0;
+//     for(int index = 0 ; index < rel_cardinality; index++){
+//         //checks if first is in set A;
+//         //checks if second is in set B;
+//         //checks if second is in any other pair;
+//         for(int j = index; j<rel_cardinality; j++){
+//             if(m->r->l[rel_line_index].p[index].second == m->r->l[rel_line_index].p[j].second){
+//                 match++;
+//             }
+//             if(match < 2){
+//                 printf("false\n");
+//                 return false
+//             }
+//         }
 //     }
+//     printf("true\n");
 //     return true;
 // }
 
