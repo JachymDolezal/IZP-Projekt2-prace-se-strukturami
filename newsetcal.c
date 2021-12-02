@@ -426,7 +426,7 @@ int set_to_index(FILE *file, Main *m){
                 strcpy(element, "");
             }
             else{
-                fprintf(stderr,"element is not in universum\n");
+                fprintf(stderr,"ERROR: Set element is not in universum\n");
                 return -1;
             }
         }
@@ -533,6 +533,14 @@ int set_find_index(Main *m, int line_index){
     return -1;
 }
 
+int rel_find_index(Main *m, int line_index){
+    for (int i = 0; i < m->r->line_cardinality; i++){
+        if(m->r->l[i].line_index == line_index)
+            return i;
+    }
+    return -1;
+}
+
 void is_empty(Main *m,int line_index){
     printf("%s\n", m->s->l[line_index].cardinality > 0 ? "false" : "true");
 }
@@ -598,8 +606,6 @@ void do_union(Main *m, int set_line_index_a, int set_line_index_b){
     bool in_union;
     int cardinality_a = m->s->l[set_line_index_a].cardinality;
     int cardinality_b = m->s->l[set_line_index_b].cardinality;
-    // printf("cardinlity_a: %d\n", cardinality_a);
-    // printf("cardinality_b: %d\n",cardinality_b);
     int *union_set = malloc((cardinality_a)+(cardinality_b)*sizeof(int)); //creates a temp array of a maximum union of the two arrays.
     int i;
     int union_cardinality = 0;
@@ -621,7 +627,6 @@ void do_union(Main *m, int set_line_index_a, int set_line_index_b){
             i++;
         }
     }
-    printf("union_cardinality%d\n",union_cardinality);
     print_set(m, union_cardinality,union_set); //outputs the result
     free(union_set);
 
@@ -654,7 +659,6 @@ void minus(Main *m, int line_index_a, int line_index_b){
 bool subseteq(Main *m, int line_index_a, int line_index_b){
     int cardinality_a = m->s->l[line_index_a].cardinality;
     int cardinality_b = m->s->l[line_index_b].cardinality;
-
     bool element_found;
     for(int i = 0; i < cardinality_a; i++){
         element_found = false;
@@ -674,27 +678,104 @@ bool subseteq(Main *m, int line_index_a, int line_index_b){
 }
 
 
-int subset(Main *m, int set_index_a, int set_index_b){
+int subset(Main *m, int line_index_a, int line_index_b){
 
-    int cardinality_a = m->s->l[set_index_a].cardinality;
-    int cardinality_b = m->s->l[set_index_b].cardinality;
+    int cardinality_a = m->s->l[line_index_a].cardinality;
+    int cardinality_b = m->s->l[line_index_b].cardinality;
 
-    if (subseteq(m, set_index_a, set_index_b) && (cardinality_a < cardinality_b)){
+    if (subseteq(m, line_index_a, line_index_b) && (cardinality_a < cardinality_b)){
         printf("true\n");
         return true;
     }
 
-    printf("true\n");
+    printf("false\n");
     return false;
 }
 
+void equals(Main *m, int line_index_a, int line_index_b){
+    //mame podmnoziny X,Y -> ak X je podmnozinou Y  a Y je podmnozinou X => X=Y
+    if(subseteq(m, line_index_a, line_index_b) && subseteq(m, line_index_b, line_index_a))
+        printf("true\n");
+    else
+        printf("false\n");
+}
+
+//*************************************************************//
+//************************ R E L A C E ************************//
+//*************************************************************//  
+
+void symmetric(Main *m, int line_index){
+    // rel_index bude index kde se nachazi spravny .radek
+    // m->r[rel_index].p[index_dvojice].first; 
+    // m->r[rel_index].p[index_dvojice].second;
+    int rel_cardinality = m->r->l[line_index].cardinality;
+    int a1, b1, a2, b2;
+    bool found_symmetric;
+  
+    for (int i = 0; i < rel_cardinality; i++){
+        a1 = m->r->l[line_index].p[i].first;
+        b1 = m->r->l[line_index].p[i].second;
+        found_symmetric = false;
+
+        for (int j = 0; j < rel_cardinality; j++){
+
+            if (j == i){
+                continue;
+            }
+
+            a2 = m->r->l[line_index].p[j].first;
+            b2 = m->r->l[line_index].p[j].second;
+
+            if (a2 == b1 && b2 == a1){
+                    found_symmetric = true;
+            }
+        }
+        if (!found_symmetric)
+            printf("false\n");
+    }
+    printf("true\n");
+}
+
+void transitive(Main *m, int line_index){
+
+    int rel_cardinality = m->r->l[line_index].cardinality;
+    int a1,b1,a2,b2,c1,c2;
+    bool found_transitive;
+
+    for (int i = 0; i < rel_cardinality; i++){
+        a1 = m->r->l[line_index].p[i].first;
+        b1 = m->r->l[line_index].p[i].second;
+        found_transitive = false;
+
+        for (int j = 0; j < rel_cardinality; j++){
+            if (j == i){
+                continue;
+            }
+            b2 = m->r->l[line_index].p[j].first;
+            if (b2 == b1){
+                c1 = m->r->l[line_index].p[j].second;
+
+                for (int k = 0; k < rel_cardinality; k++){
+                    if (k == i || k == j){
+                        continue;
+                    }
+                    a2 = m->r->l[line_index].p[k].first;
+                    c2 = m->r->l[line_index].p[k].second;
+                    if (a2 == a1 && c2 == c1){
+                        found_transitive = true;
+                    }
+                }
+            }
+        }
+        if (!found_transitive){
+            printf("false\n");
+        }
+    }
+    printf("true\n");
+} 
 
 
 
-// void equals(Main *m, int ){
-//     if(subseteq)
-// }
-//mame podmnoziny X,Y -> ak X je podmnozinou Y  a Y je podmnozinou X => X=Y
 
 /**
  * @brief
@@ -721,15 +802,19 @@ int function_call(Main *m, char* func_name, int par1, int par2, int par3){
         do_complement(m, par1);
     }
     if(strcmp("symmetric",func_name) == 0){
-        printf("symmetric");
+        par1 = rel_find_index(m, par1);
+        symmetric(m, par1);
     }
     if(strcmp("transitive",func_name) == 0){
-        printf("transitive");
+        par1 = rel_find_index(m, par1);
+        transitive(m, par1);
     }
     if(strcmp("function",func_name) == 0){
+        par1 = rel_find_index(m, par1);
         printf("function");
     }
     if(strcmp("domain",func_name) == 0){
+        par1 = rel_find_index(m, par1);
         printf("domain");
     }
     if(strcmp("intersect",func_name) == 0){
@@ -753,10 +838,14 @@ int function_call(Main *m, char* func_name, int par1, int par2, int par3){
         subseteq(m,par1,par2);
     }
     if(strcmp("subset",func_name) == 0){
-        printf("calling card");
+        par1 = set_find_index(m, par1);
+        par2 = set_find_index(m, par2);
+        subset(m,par1,par2);
     }
     if(strcmp("equals",func_name) == 0){
-        printf("calling card");
+        par1 = set_find_index(m, par1);
+        par2 = set_find_index(m, par2);
+        equals(m,par1,par2);
     }
     if(strcmp("injective",func_name) == 0){
         printf("calling card");
