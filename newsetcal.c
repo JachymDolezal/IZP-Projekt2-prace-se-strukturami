@@ -797,7 +797,7 @@ bool is_function(Main *m, int line_index_a)
     for (i = 0; i < cardinality; ++i)
     {
 
-        int x_index = m->r->l[line_index_a].p[i].second;
+        int x_index = m->r->l[line_index_a].p[i].first;
 
         // printf("%d toto je X index\n", x_index);
         for (j = 0; j < cardinality; j++)
@@ -890,7 +890,7 @@ bool is_reflexive(Main *m, int line_index_a)
             }
             if (check != reflex[h] && h == index)
             {
-                printf("Relace neni reflexivni\n");
+                printf("false\n");
                 free(reflex);
                 return false;
             }
@@ -904,14 +904,14 @@ bool is_reflexive(Main *m, int line_index_a)
             }
             if (backwards_check != reflex[h] && f == index)
             {
-                printf("Relace neni reflexivni\n");
+                printf("false\n");
                 free(reflex);
                 return false;
             }
         }
     }
     free(reflex);
-    printf("Relace je reflexivni\n");
+    printf("true\n");
     return true;
 }
 
@@ -947,12 +947,12 @@ bool is_asymmetric(Main *m, int line_index_a)
         }
         if (asymmetricity_x == true)
         {
-            printf("Relace neni asymetricka\n");
+            printf("false\n");
             return false;
         }
     }
 
-    printf("Relace je asymetricka\n");
+    printf("true\n");
     return true;
 }
 
@@ -1025,7 +1025,7 @@ bool is_asymmetric(Main *m, int line_index_a)
 void codomain(Main *m, int line_index_a){
     int i, j;
     int current_element;
-    int index = 1;
+    int index = 0;
     int cardinality = m->r->l[line_index_a].cardinality;
     int *obor_hodnot = malloc(sizeof(int) * cardinality);
     bool shoda;
@@ -1048,7 +1048,6 @@ void codomain(Main *m, int line_index_a){
             continue;
         }
     }
-
     print_set(m , index, obor_hodnot);
 
     free(obor_hodnot);
@@ -1355,7 +1354,10 @@ void print_set_old(Main *m){
 void print_set(Main *m, int cardinality, int *set){
     printf("S ");
     for (int i = 0; i < cardinality; i++){
-        printf("%s ", m->u->elements[set[i]].element);
+        printf("%s", m->u->elements[set[i]].element);
+        if(i == cardinality-1)
+            break;
+        printf(" ");
     }
     printf("\n");
 }
