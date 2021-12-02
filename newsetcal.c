@@ -816,14 +816,14 @@ bool is_function(Main *m, int line_index_a)
 
         if (funkce == true)
         {
-            printf("Relace neni funkce\n");
+            printf("false\n");
 
             return false;
         }
         obor_hodnot[i] = y_index;
     }
 
-    printf("Relace je funkce\n");
+    printf("true\n");
     return true;
 }
 
@@ -1094,17 +1094,17 @@ int injective(Main *m, int rel_line_index, int set_A_line_index, int set_B_line_
 }
 
 
-int surjective(Main *m, int rel_line_index, int set_A_line_index, int set_B_line_index){
+// int surjective(Main *m, int rel_line_index, int set_A_line_index, int set_B_line_index){
 
-    return true;
-}
+//     return true;
+// }
 
-int bijective(Main *m, int rel_line_index, int set_A_line_index, int set_B_line_index){
-    if(injective(m,rel_line_index,set_A_line_index,set_B_line_index) && surjective(m,rel_line_index,set_A_line_index,set_B_line_index)){
-        return true;
-    }
-    return false;
-}
+// int bijective(Main *m, int rel_line_index, int set_A_line_index, int set_B_line_index){
+//     if(injective(m,rel_line_index,set_A_line_index,set_B_line_index) && surjective(m,rel_line_index,set_A_line_index,set_B_line_index)){
+//         return true;
+//     }
+//     return false;
+// }
 
 /**
  * @brief
