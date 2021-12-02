@@ -4,7 +4,7 @@ Authors:
 @Midiros login: xlegne00
 @youruncle1 login: xpolia05
 
-Last updated 30.11.2021 0:30 a.m.
+Last updated 2.12.2021.
 */
 
 #include <stdio.h>
@@ -412,7 +412,7 @@ int set_to_index(FILE *file, Main *m){
             element[element_len++] = character;
         }
         character = getc(file);
-        if (character == ' ' || character == '\n'){
+        if (character == ' ' || character == '\n' || character == EOF){
             element[element_len] = '\0';
             set_index = is_in_universum(m, element);
             if (set_index != -1){
@@ -736,7 +736,7 @@ void symmetric(Main *m, int line_index){
     printf("true\n");
 }
 
-void transitive(Main *m, int line_index){
+int transitive(Main *m, int line_index){
 
     int rel_cardinality = m->r->l[line_index].cardinality;
     int a1,b1,a2,b2,c1,c2;
@@ -769,9 +769,11 @@ void transitive(Main *m, int line_index){
         }
         if (!found_transitive){
             printf("false\n");
+            return false;
         }
     }
     printf("true\n");
+    return true;
 } 
 
 
@@ -1010,15 +1012,15 @@ void print_relation_old(Main *m){
     printf("\n");
 }
 
-void print_relation(Main *m, int cardinality, int**relation ){
+// void print_relation(Main *m, int cardinality, int**relation ){
 
-    int rel_index = 0;
-    printf("R ");
-    for(int i = 0; i < cardinality ; i++){
-        
-    }
+//     int rel_index = 0;
+//     printf("R ");
+//     for(int i = 0; i < cardinality ; i++){
 
-}
+//     }
+
+// }
 
 int relation_line_add(Main *m, int line_index){
     int line_cardinality = m->r->line_cardinality;

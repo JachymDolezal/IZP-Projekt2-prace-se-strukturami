@@ -1,6 +1,7 @@
-U hi bye hello mom dad son
+U hi bye hello mom dad son yo
 S mom dad son
 S mom dad
-R (hi bye) (hello bye)
 S hi bye
-C subseteq 2 3
+S hi dad son
+R (hi bye) (hi yo) (mom hello)
+C union 5 5
