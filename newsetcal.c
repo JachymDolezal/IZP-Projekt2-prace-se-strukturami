@@ -4,7 +4,11 @@ Authors:
 @Midiros login: xlegne00
 @youruncle1 login: xpolia05
 
+<<<<<<< HEAD
+Last updated 30.11.2021 0:30 a.m.
+=======
 Last updated 2.12.2021.
+>>>>>>> db128afc0a71e2fe037ae51ffacef02937351d6c
 */
 
 #include <stdio.h>
@@ -788,27 +792,27 @@ bool is_function(Main *m, int line_index_a)
 {
     int i, j;
     bool funkce;
-    int *obor_hodnot = malloc(sizeof(int) * m->r->l[line_index_a].cardinality);
+    int *definicni_obor = malloc(sizeof(int) * m->r->l[line_index_a].cardinality);
     int cardinality = m->r->l[line_index_a].cardinality;
     for (i = 0; i < cardinality; ++i)
     {
 
-        int y_index = m->r->l[line_index_a].p[i].second;
+        int x_index = m->r->l[line_index_a].p[i].second;
 
         // printf("%d toto je X index\n", x_index);
         for (j = 0; j < cardinality; j++)
         {
             funkce = false;
-            int y_index2 = obor_hodnot[j];
+            int x_index2 = definicni_obor[j];
 
             // printf("%d toto je Y index\n", y_index);
-            if (y_index == y_index2)
+            if (x_index == x_index2)
             {
                 // printf("shoda\n");
                 funkce = true;
                 break;
             }
-            if (j < cardinality && y_index != y_index2)
+            if (j < cardinality && x_index != x_index2)
             {
                 continue;
             }
@@ -820,7 +824,7 @@ bool is_function(Main *m, int line_index_a)
 
             return false;
         }
-        obor_hodnot[i] = y_index;
+        definicni_obor[i] = x_index;
     }
 
     printf("true\n");
