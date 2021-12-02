@@ -704,6 +704,13 @@ void equals(Main *m, int line_index_a, int line_index_b){
 //************************ R E L A C E ************************//
 //*************************************************************//  
 
+
+/**
+ * @brief 
+ * 
+ * @param m 
+ * @param line_index 
+ */
 void symmetric(Main *m, int line_index){
     // rel_index bude index kde se nachazi spravny .radek
     // m->r[rel_index].p[index_dvojice].first; 
@@ -736,6 +743,13 @@ void symmetric(Main *m, int line_index){
     printf("true\n");
 }
 
+/**
+ * @brief 
+ * 
+ * @param m 
+ * @param line_index 
+ * @return int 
+ */
 int transitive(Main *m, int line_index){
 
     int rel_cardinality = m->r->l[line_index].cardinality;
@@ -774,10 +788,26 @@ int transitive(Main *m, int line_index){
     }
     printf("true\n");
     return true;
-} 
+}
+
+int surjective(Main *m, int rel_line_index, int set_A_line_index, int set_B_line_index){
+
+    return true;
+}
 
 
 
+int injective(Main *m, int rel_line_index, int set_A_line_index, int set_B_line_index){
+
+    return true;
+}
+
+int bijective(Main *m, int rel_line_index, int set_A_line_index, int set_B_line_index){
+    if(injective(m,rel_line_index,set_A_line_index,set_B_line_index) && surjective(m,rel_line_index,set_A_line_index,set_B_line_index)){
+        return true;
+    }
+    return false;
+}
 
 /**
  * @brief
@@ -787,7 +817,6 @@ int transitive(Main *m, int line_index){
  * @param idx
  * @return int
  */
-
 int function_call(Main *m, char* func_name, int par1, int par2, int par3){
     // printf("%p %s %d %d %d\n", m, func_name, par1, par2, par3);
     (void) par3;
