@@ -1,7 +1,3 @@
-U hi bye hello mom dad son yo
-S mom dad son
-S mom dad
-S hi bye
-S hi dad son
-R (hi bye) (hi yo) (mom hello)
-C union 5 5
+U dad mom girl boy man woman
+R (dad man) (boy man) (mom woman) (girl woman)
+C function 2
