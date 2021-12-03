@@ -4,11 +4,7 @@ Authors:
 @Midiros login: xlegne00
 @youruncle1 login: xpolia05
 
-<<<<<<< HEAD
-Last updated 30.11.2021 0:30 a.m.
-=======
-Last updated 2.12.2021.
->>>>>>> db128afc0a71e2fe037ae51ffacef02937351d6c
+Last updated 3.12.2021.
 */
 
 #include <stdio.h>
@@ -808,7 +804,7 @@ void equals(Main *m, int line_index_a, int line_index_b)
  * @param m
  * @param line_index
  */
-void symmetric(Main *m, int line_index)
+int symmetric(Main *m, int line_index)
 {
     // rel_index bude index kde se nachazi spravny .radek
     // m->r[rel_index].p[index_dvojice].first;
@@ -839,10 +835,13 @@ void symmetric(Main *m, int line_index)
                 found_symmetric = true;
             }
         }
-        if (!found_symmetric)
+        if (!found_symmetric){
             printf("false\n");
+            return false;
+        }
     }
     printf("true\n");
+    return true;
 }
 
 int transitive(Main *m, int line_index)
@@ -936,10 +935,6 @@ bool is_function(Main *m, int line_index_a)
         }
         definicni_obor[i] = x_index;
     }
-<<<<<<< HEAD
-=======
-
->>>>>>> 42945e35e5a4ae11c84479af54ebc33e2eff8c52
     printf("true\n");
     return true;
 }
@@ -1166,13 +1161,7 @@ void codomain(Main *m, int line_index_a)
             continue;
         }
     }
-<<<<<<< HEAD
-
-    print_set(m, index, obor_hodnot);
-=======
     print_set(m , index, obor_hodnot);
->>>>>>> 42945e35e5a4ae11c84479af54ebc33e2eff8c52
-
     free(obor_hodnot);
 }
 // * Tiskne definicni obor.
@@ -1213,37 +1202,33 @@ void domain(Main *m, int line_index_a)
     free(definicni_obor);
 }
 
-// int injective(Main *m, int rel_line_index, int set_A_line_index, int set_B_line_index){
 
-<<<<<<< HEAD
-//     return true;
-// }
-=======
-// int injective(Main *m, int rel_line_index, int set_A_line_index, int set_B_line_index){
-//     int rel_cardinality = m->r->l[rel_line_index].cardinality;
-//     int set_A_cardinality = m->s->l[set_A_line_index].cardinality;
-//     int set_B_cardinality = m->s->l[set_B_line_index].cardinality;
-//     int index = 0;
-//     int match = 0;
-//     for(int index = 0 ; index < rel_cardinality; index++){
-//         //checks if first is in set A;
-//         //checks if second is in set B;
-//         //checks if second is in any other pair;
-//         for(int j = index; j<rel_cardinality; j++){
-//             if(m->r->l[rel_line_index].p[index].second == m->r->l[rel_line_index].p[j].second){
-//                 match++;
-//             }
-//             if(match < 2){
-//                 printf("false\n");
-//                 return false
-//             }
-//         }
-//     }
-//     printf("true\n");
-//     return true;
-// }
+int injective(Main *m, int rel_line_index, int set_A_line_index, int set_B_line_index){
+    int rel_cardinality = m->r->l[rel_line_index].cardinality;
+    (void) set_A_line_index;
+    //  = m->s->l[set_A_line_index].cardinality;
+    (void) set_B_line_index;
+    // = m->s->l[set_B_line_index].cardinality;
+    int index = 0;
+    int match = 0;
+    for(index = 0 ; index < rel_cardinality; index++){
+        //checks if first is in set A;
+        //checks if second is in set B;
+        //checks if second is in any other pair;
+        for(int j = index; j<rel_cardinality; j++){
+            if(m->r->l[rel_line_index].p[index].second == m->r->l[rel_line_index].p[j].second){
+                match++;
+            }
+            if(match < 2){
+                printf("false\n");
+                return false;
+            }
+        }
+    }
+    printf("true\n");
+    return true;
+}
 
->>>>>>> 42945e35e5a4ae11c84479af54ebc33e2eff8c52
 
 // int surjective(Main *m, int rel_line_index, int set_A_line_index, int set_B_line_index){
 
@@ -1265,121 +1250,79 @@ void domain(Main *m, int line_index_a)
  * @param idx
  * @return int
  */
-int function_call(Main *m, char *func_name, int par1, int par2, int par3)
-{
-    // printf("%p %s %d %d %d\n", m, func_name, par1, par2, par3);
-    (void)par3;
-    if (strcmp("empty", func_name) == 0)
-    {
-        par1 = set_find_index(m, par1);
-        // printf("is_empty par1; %d", par1);
-        is_empty(m, par1);
-    }
-    if (strcmp("card", func_name) == 0)
-    {
-        par1 = set_find_index(m, par1);
-        printf("card");
-    }
-    if (strcmp("complement", func_name) == 0)
-    {
-        par1 = rel_find_index(m, par1);
-        do_complement(m, par1);
-    }
-    if (strcmp("symmetric", func_name) == 0)
-    {
-        par1 = rel_find_index(m, par1);
-        symmetric(m, par1);
-    }
-    if (strcmp("asymmetric", func_name) == 0)
-    {
-        par1 = rel_find_index(m, par1);
-        is_asymmetric(m, par1);
-    }
-    if (strcmp("transitive", func_name) == 0)
-    {
-        par1 = rel_find_index(m, par1);
-        transitive(m, par1);
-    }
-    if (strcmp("reflexive", func_name) == 0)
-    {
-        par1 = rel_find_index(m, par1);
-        is_reflexive(m, par1);
-    }
-    if (strcmp("function", func_name) == 0)
-    {
-        par1 = rel_find_index(m, par1);
-        is_function(m, par1);
-    }
-    if (strcmp("domain", func_name) == 0)
-    {
-        par1 = rel_find_index(m, par1);
-        domain(m, par1);
-    }
-    if (strcmp("codomain", func_name) == 0)
-    {
-        par1 = rel_find_index(m, par1);
-        codomain(m, par1);
-    }
+int function_call(Main *m, int func_index, int par1, int par2, int par3){
 
-    if (strcmp("intersect", func_name) == 0)
-    {
-        par1 = set_find_index(m, par1);
-        par2 = set_find_index(m, par2);
-        intersect(m, par1, par2);
+    int rel_1 = rel_find_index(m, par1);
+    int set_1 = set_find_index(m,par1);
+    int set_2 = set_find_index(m,par2);
+    int set_3 = set_find_index(m,par3);
+    (void) set_3;
+    // printf("%p %s %d %d %d\n", m, func_name, par1, par2, par3);
+
+    if(par1 == 0 && par2 == 0 && par3 == 0){
+        fprintf(stderr,"Invalid function syntax\n");
+        return -1;
     }
-    if (strcmp("union", func_name) == 0)
-    {
-        par1 = set_find_index(m, par1);
-        par2 = set_find_index(m, par2);
-        do_union(m, par1, par2);
-    }
-    if (strcmp("minus", func_name) == 0)
-    {
-        par1 = set_find_index(m, par1);
-        par2 = set_find_index(m, par2);
-        minus(m, par1, par2);
-    }
-    if (strcmp("subseteq", func_name) == 0)
-    {
-        par1 = set_find_index(m, par1);
-        par2 = set_find_index(m, par2);
-        subseteq(m, par1, par2);
-    }
-    if (strcmp("subset", func_name) == 0)
-    {
-        par1 = set_find_index(m, par1);
-        par2 = set_find_index(m, par2);
-        subset(m, par1, par2);
-    }
-    if (strcmp("equals", func_name) == 0)
-    {
-        par1 = set_find_index(m, par1);
-        par2 = set_find_index(m, par2);
-        equals(m, par1, par2);
-    }
-    if (strcmp("injective", func_name) == 0)
-    {
-        par1 = rel_find_index(m, par1);
-        par2 = set_find_index(m, par2);
-        par3 = set_find_index(m, par3);
-        // injective(m,par1,par2,par3);
-        printf("calling injective");
-    }
-    if (strcmp("surjective", func_name) == 0)
-    {
-        par1 = rel_find_index(m, par1);
-        par2 = set_find_index(m, par2);
-        par3 = set_find_index(m, par3);
-        // surjective(m,par1,par2,par3);
-        printf("calling surjective");
-    }
-    if (strcmp("bijective", func_name) == 0)
-    {
-        par1 = rel_find_index(m, par1);
-        par2 = set_find_index(m, par2);
-        par3 = set_find_index(m, par3);
-        // bijective(m,par1,par2,par3);
-        printf("calling bijective");
+    switch(func_index) {
+        case 0 :
+            is_empty(m,set_1);
+            break;
+        case 1 :
+            printf("%d\n",m->s->l[set_1].cardinality);
+            break;
+        case 2 :
+            do_complement(m,set_1);
+            break;
+        case 3 :
+            is_reflexive(m,rel_1);
+            break;
+        case 4 :
+            symmetric(m,rel_1);
+            break;
+        case 5 :
+            is_asymmetric(m,rel_1);
+            break;
+        case 6 :
+            transitive(m,set_1);
+            break;
+        case 7 :
+            is_function(m,rel_1);
+            break;
+        case 8 :
+            domain(m,rel_1);
+            break;
+        case 9 :
+            codomain(m,rel_1);
+            break;
+        case 10 :
+            do_union(m,set_1,set_2);
+            break;
+        case 11 :
+            intersect(m,set_1,set_2);
+            break;
+        case 12 :
+            minus(m,set_1,set_2);
+            break;
+        case 13 :
+            subseteq(m,set_1,set_2);
+            break;
+        case 14 :
+            subset(m,set_1,set_2);
+            break;
+        case 15 :
+            equals(m,set_1,set_2);
+            break;
+        case 16 :
+            printf("injective params: %d %d %d",rel_1,set_2,set_3);
+            break;
+        case 17 :
+            printf("surjective\n");
+            break;
+        case 18 :
+            printf("bijective\n");
+            break;
+        default :
+            printf("bad func name");
     }
     return true;
 }
@@ -1464,8 +1407,12 @@ int function_parser(FILE *file, Main *m)
         }
     }
     // printf("function: %s num1: %c, num2:%c, num3: %c\n",functions[func_num],firstnum,secondnum,thirdnum);
-    function_call(m, functions[func_num], firstnum, secondnum, thirdnum);
-    return 0;
+    // function_call(m, functions[func_num], firstnum, secondnum, thirdnum);
+    if(function_call(m, func_num, firstnum, secondnum, thirdnum))
+        return 0;
+    else{
+        return -1;
+    }
 }
 
 /**
@@ -1514,17 +1461,11 @@ void print_set_old(Main *m)
 void print_set(Main *m, int cardinality, int *set)
 {
     printf("S ");
-<<<<<<< HEAD
-    for (int i = 0; i < cardinality; i++)
-    {
-        printf("%s ", m->u->elements[set[i]].element);
-=======
     for (int i = 0; i < cardinality; i++){
         printf("%s", m->u->elements[set[i]].element);
         if(i == cardinality-1)
             break;
         printf(" ");
->>>>>>> 42945e35e5a4ae11c84479af54ebc33e2eff8c52
     }
     printf("\n");
 }
@@ -1662,7 +1603,8 @@ int main(int argc, char *argv[])
         }
         if (return_value == 5)
         {
-            function_parser(file, m);
+            if((function_parser(file, m)) == -1)
+                return EXIT_FAILURE;
         }
         if (!return_value)
         {
