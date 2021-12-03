@@ -546,51 +546,66 @@ int relation_to_index(FILE *file, Main *m)
     int idx = 0;
     character = 'd';
 
-    while (character != '\n' && character != EOF)
-    {
+    while (character != '\n' && character != EOF){
         character = getc(file);
-        if (character == '(')
-        {
-            while (character != ' ')
-            {
+        if(character == ')'){
+            fprintf(stderr,"Wrong relation syntax");
+            return -1;
+        }
+        if (character == '('){
+            while (character != ' '){
                 character = getc(file);
+                //error handling
+                if(character == '(' || character == ')'){
+                    fprintf(stderr,"Wrong relation syntax");
+                    return -1;
+                }
                 if (character != ' ')
                     temp[index++] = character;
             }
             temp[index] = '\0';
             index = 0;
             // load first word
-            if ((is_in_universum(m, temp)) != -1)
-            {
+            if ((is_in_universum(m, temp)) != -1){
                 relation_add_element(m, is_in_universum(m, temp), 1, idx);
+            }
+            else{
+                return -1;
             }
             strcpy(temp, "");
             first_word_loaded = true;
-            while (character != ')')
-            {
+            while (character != ')') {
                 character = getc(file);
+                if(character == ' ' || character == '('){
+                    fprintf(stderr,"Wrong relation syntax");
+                    return -1;
+                }
                 if (character != ')')
                     temp[index++] = character;
             }
             temp[index] = '\0';
             index = 0;
             // load second word
-            if ((is_in_universum(m, temp)) != -1)
-            {
+            if ((is_in_universum(m, temp)) != -1){
                 relation_add_element(m, is_in_universum(m, temp), 0, idx);
+            }
+            else{
+                return -1;
             }
             strcpy(temp, "");
             second_word_loaded = true;
-            if (second_word_loaded && first_word_loaded)
-            {
+            if (second_word_loaded && first_word_loaded){
                 idx++;
                 first_word_loaded = false;
                 second_word_loaded = false;
             }
+            else{
+                return -1;
+            }
         }
     }
 
-    return 0;
+    return true;
 }
 
 int set_find_index(Main *m, int line_index)
@@ -1372,8 +1387,6 @@ int function_parser(FILE *file, Main *m)
             {
                 if (strcmp(temp, functions[func_num]) == 0)
                 {
-                    // printf("funcnum:%d\n", func_num);
-                    // printf("functionname: %s\n", functions[func_num]);
                     break;
                 }
             }
@@ -1383,6 +1396,7 @@ int function_parser(FILE *file, Main *m)
                 return -1;
             }
         }
+    // TODO check if found function has exact number of parameters
     }
     // firstnum + space
     character = fgetc(file);
@@ -1487,9 +1501,12 @@ void print_relation(Main *m)
     printf("R ");
     for (int i = 0; i < m->r->l[line_cardinality].cardinality; i++)
     {
-        rel_index = m->r->l[line_cardinality].p[i].first;
+        rel_index = m->r->l[line_cardinality].p[i].first; // first pair
+
         printf("(%s ", m->u->elements[rel_index].element);
-        rel_index = m->r->l[line_cardinality].p[i].second;
+
+        rel_index = m->r->l[line_cardinality].p[i].second; //second pair
+
         printf("%s)", m->u->elements[rel_index].element);
         if (i == m->r->l[line_cardinality].cardinality - 1)
             break;
@@ -1597,7 +1614,12 @@ int main(int argc, char *argv[])
         if (return_value == 4)
         {
             relation_line_add(m, line_index);
-            relation_to_index(file, m);
+            if((relation_to_index(file, m)) == -1){
+                fprintf(stderr,"wrong relation syntax");
+                line_index++;
+                main_dtor(m, 3);
+                return EXIT_FAILURE;
+            }
             print_relation(m);
             (m->r->line_cardinality)++;
         }
