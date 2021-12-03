@@ -936,6 +936,10 @@ bool is_function(Main *m, int line_index_a)
         }
         definicni_obor[i] = x_index;
     }
+<<<<<<< HEAD
+=======
+
+>>>>>>> 42945e35e5a4ae11c84479af54ebc33e2eff8c52
     printf("true\n");
     return true;
 }
@@ -999,7 +1003,7 @@ bool is_reflexive(Main *m, int line_index_a)
             }
             if (check != reflex[h] && h == index)
             {
-                printf("Relace neni reflexivni\n");
+                printf("false\n");
                 free(reflex);
                 return false;
             }
@@ -1013,14 +1017,14 @@ bool is_reflexive(Main *m, int line_index_a)
             }
             if (backwards_check != reflex[h] && f == index)
             {
-                printf("Relace neni reflexivni\n");
+                printf("false\n");
                 free(reflex);
                 return false;
             }
         }
     }
     free(reflex);
-    printf("Relace je reflexivni\n");
+    printf("true\n");
     return true;
 }
 
@@ -1056,12 +1060,12 @@ bool is_asymmetric(Main *m, int line_index_a)
         }
         if (asymmetricity_x == true)
         {
-            printf("Relace neni asymetricka\n");
+            printf("false\n");
             return false;
         }
     }
 
-    printf("Relace je asymetricka\n");
+    printf("true\n");
     return true;
 }
 
@@ -1135,7 +1139,7 @@ void codomain(Main *m, int line_index_a)
 {
     int i, j;
     int current_element;
-    int index = 1;
+    int index = 0;
     int cardinality = m->r->l[line_index_a].cardinality;
     int *obor_hodnot = malloc(sizeof(int) * cardinality);
     bool shoda;
@@ -1162,8 +1166,12 @@ void codomain(Main *m, int line_index_a)
             continue;
         }
     }
+<<<<<<< HEAD
 
     print_set(m, index, obor_hodnot);
+=======
+    print_set(m , index, obor_hodnot);
+>>>>>>> 42945e35e5a4ae11c84479af54ebc33e2eff8c52
 
     free(obor_hodnot);
 }
@@ -1207,8 +1215,35 @@ void domain(Main *m, int line_index_a)
 
 // int injective(Main *m, int rel_line_index, int set_A_line_index, int set_B_line_index){
 
+<<<<<<< HEAD
 //     return true;
 // }
+=======
+// int injective(Main *m, int rel_line_index, int set_A_line_index, int set_B_line_index){
+//     int rel_cardinality = m->r->l[rel_line_index].cardinality;
+//     int set_A_cardinality = m->s->l[set_A_line_index].cardinality;
+//     int set_B_cardinality = m->s->l[set_B_line_index].cardinality;
+//     int index = 0;
+//     int match = 0;
+//     for(int index = 0 ; index < rel_cardinality; index++){
+//         //checks if first is in set A;
+//         //checks if second is in set B;
+//         //checks if second is in any other pair;
+//         for(int j = index; j<rel_cardinality; j++){
+//             if(m->r->l[rel_line_index].p[index].second == m->r->l[rel_line_index].p[j].second){
+//                 match++;
+//             }
+//             if(match < 2){
+//                 printf("false\n");
+//                 return false
+//             }
+//         }
+//     }
+//     printf("true\n");
+//     return true;
+// }
+
+>>>>>>> 42945e35e5a4ae11c84479af54ebc33e2eff8c52
 
 // int surjective(Main *m, int rel_line_index, int set_A_line_index, int set_B_line_index){
 
@@ -1479,9 +1514,17 @@ void print_set_old(Main *m)
 void print_set(Main *m, int cardinality, int *set)
 {
     printf("S ");
+<<<<<<< HEAD
     for (int i = 0; i < cardinality; i++)
     {
         printf("%s ", m->u->elements[set[i]].element);
+=======
+    for (int i = 0; i < cardinality; i++){
+        printf("%s", m->u->elements[set[i]].element);
+        if(i == cardinality-1)
+            break;
+        printf(" ");
+>>>>>>> 42945e35e5a4ae11c84479af54ebc33e2eff8c52
     }
     printf("\n");
 }
