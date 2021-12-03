@@ -1,0 +1,3 @@
+U dad mom girl boy man woman
+R (dad man) (boy man) (mom woman) (girl woman)
+C function 2
