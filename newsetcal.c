@@ -11,6 +11,7 @@ Last updated 3.12.2021.
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
+#include <ctype.h>
 
 #define TRUE 1
 #define FALSE 0
@@ -317,6 +318,9 @@ int type_check(FILE *file){
             return 5;
         }
     }
+    if (character == '\n'){
+        return -1;
+    }
     if (character == EOF){
         return 0;
     }
@@ -346,7 +350,6 @@ int uni_add_element(Main *m, char *element, int idx)
     }
     if(idx == -1){
         m->u->universum_cardinality = 0;
-        
     }
     else{
         strcpy(m->u->elements[idx].element, element);
@@ -357,7 +360,7 @@ int uni_add_element(Main *m, char *element, int idx)
 
 int find_function_keyword(char *str,bool find_function){
 
-    int keyword_count = 20;
+    int keyword_count = 21;
     char functions[NUM_OF_KEYWORDS][KEYWORD_MAX_LEN] = {
     // 1 input 0-9
     {"empty"},
@@ -384,7 +387,6 @@ int find_function_keyword(char *str,bool find_function){
     {"true"},
     {"false"},
     };
-    
     if(find_function)
         keyword_count = 18;
 
@@ -395,6 +397,13 @@ int find_function_keyword(char *str,bool find_function){
     return -1;
 }
 
+int is_alpha_only(char *str){
+    for (int i = 0; str[i] != '\0'; i++){
+        if(!isalpha((int)str[i]))
+            return 0;
+    }
+    return 1;
+}
 
 /**
  * @brief
@@ -417,7 +426,7 @@ int load_universum(FILE *file, Main *m, int line_index)
     {
         if (element_len > 29)
         {
-            fprintf(stderr, "ERROR: Element defined in universe longer than 30 characters!");
+            fprintf(stderr, "ERROR: Element defined in universe longer than 30 characters!\n");
             return -1;
         }
 
@@ -430,14 +439,18 @@ int load_universum(FILE *file, Main *m, int line_index)
         if (character == ' ' || character == '\n')
         {
             element[element_len] = '\0';
+            if(!is_alpha_only(element)){
+                fprintf(stderr, "ERROR: Universum element contains non-alpha character!\n");
+                return -1;
+            }
             if(find_function_keyword(element, 0) != -1){
-                fprintf(stderr, "ERROR: Forbidden word defined in universum!");
+                fprintf(stderr, "ERROR: Forbidden word defined in universum!\n");
                 return -1;
             }
             uni_add_element(m, element, idx);
             if (m->u->elements[idx].element == NULL)
             {
-                fprintf(stderr, "ERROR: Memory allocation failure...");
+                fprintf(stderr, "ERROR: Memory allocation failure...\n");
                 return -1;
             }
             idx++;
@@ -448,9 +461,6 @@ int load_universum(FILE *file, Main *m, int line_index)
     set_line_add(m, line_index);
     for(int i = 0; i < m->u->universum_cardinality; i++)
         set_add_element(m, i, i);
-    if(!is_set(m)){
-        return -1;
-    }
     (m->s->line_cardinality)++;
     return 1;
 }
@@ -525,22 +535,37 @@ int set_add_element(Main *m, int element_index, int idx)
 }
 
 int is_set(Main *m){
+    //S a a c d
     int line_cardinality = m->s->line_cardinality;
     int set_cardinality = m->s->l[line_cardinality].cardinality;
-    int num1, num2 = 0;
-    // printf("is_set:\nline_cardinality: %d\nset_cardinality: %d\n", line_cardinality, set_cardinality);
-    // [1,0,2,3,2,4]
-    for (int i = 0; i < set_cardinality; i++){
-        num1 = m->s->l[line_cardinality].set_items[i];
+    for(int i = 0; i < set_cardinality; i++){
         for(int j = i+1; j < set_cardinality; j++){
-            num2 = m->s->l[line_cardinality].set_items[j];
-            if (num1 == num2){
-                fprintf(stderr,"Element cannot be twice in Universe/Set.\n");
-                return 0;
+            if(m->s->l[line_cardinality].set_items[i] == m->s->l[line_cardinality].set_items[j]){
+                fprintf(stderr, "ERROR: Set element duplicity!");
+                return -1;
             }
         }
     }
-    return 1;
+    return true;
+}
+
+/**
+ * @brief 
+ * 
+ * @param m 
+ * @return int 
+ */
+int is_relation(Main *m){
+    int line_cardinality = m->r->line_cardinality;
+    int rel_cardinality = m->r->l[line_cardinality].cardinality;
+    for(int i = 0; i < rel_cardinality; i++){
+        for (int j = i+1; j < rel_cardinality; j++)
+            if((m->r->l[line_cardinality].p[i].first == m->r->l[line_cardinality].p[j].first) && (m->r->l[line_cardinality].p[i].second == m->r->l[line_cardinality].p[j].second)){
+                fprintf(stderr, "ERROR: Relation element duplicity!\n");
+                return -1;
+            }
+        }
+    return true;    
 }
 
 /**
@@ -650,7 +675,7 @@ int relation_to_index(FILE *file, Main *m)
     while (character != '\n' && character != EOF){
         character = getc(file);
         if(character == ')'){
-            fprintf(stderr,"Wrong relation syntax");
+            fprintf(stderr,"ERROR: Wrong relation syntax\n");
             return -1;
         }
         if (character == '('){
@@ -658,7 +683,7 @@ int relation_to_index(FILE *file, Main *m)
                 character = getc(file);
                 //error handling
                 if(character == '(' || character == ')'){
-                    fprintf(stderr,"Wrong relation syntax");
+                    fprintf(stderr,"ERROR: Wrong relation syntax\n");
                     return -1;
                 }
                 if (character != ' ')
@@ -671,6 +696,7 @@ int relation_to_index(FILE *file, Main *m)
                 relation_add_element(m, is_in_universum(m, temp), 1, idx);
             }
             else{
+                fprintf(stderr,"ERROR: Relation element not in universum\n");
                 return -1;
             }
             strcpy(temp, "");
@@ -678,7 +704,7 @@ int relation_to_index(FILE *file, Main *m)
             while (character != ')') {
                 character = getc(file);
                 if(character == ' ' || character == '('){
-                    fprintf(stderr,"Wrong relation syntax");
+                    fprintf(stderr,"ERROR: Wrong relation syntax\n");
                     return -1;
                 }
                 if (character != ')')
@@ -691,6 +717,7 @@ int relation_to_index(FILE *file, Main *m)
                 relation_add_element(m, is_in_universum(m, temp), 0, idx);
             }
             else{
+                fprintf(stderr,"ERROR: Relation element not in universum\n");
                 return -1;
             }
             strcpy(temp, "");
@@ -701,6 +728,7 @@ int relation_to_index(FILE *file, Main *m)
                 second_word_loaded = false;
             }
             else{
+                fprintf(stderr,"ERROR: Wrong relation syntax\n");
                 return -1;
             }
         }
@@ -917,94 +945,30 @@ void equals(Main *m, int line_index_a, int line_index_b)
  * @param m
  * @param line_index
  */
-int symmetric(Main *m, int line_index)
-{
-    // rel_index bude index kde se nachazi spravny .radek
-    // m->r[rel_index].p[index_dvojice].first;
-    // m->r[rel_index].p[index_dvojice].second;
+void symmetric(Main *m, int line_index){
     int rel_cardinality = m->r->l[line_index].cardinality;
-    int a1, b1, a2, b2;
-    bool found_symmetric;
-
-    for (int i = 0; i < rel_cardinality; i++)
-    {
-        a1 = m->r->l[line_index].p[i].first;
-        b1 = m->r->l[line_index].p[i].second;
-        found_symmetric = false;
-
-        for (int j = 0; j < rel_cardinality; j++)
-        {
-
-            if (j == i)
-            {
-                continue;
-            }
-
-            a2 = m->r->l[line_index].p[j].first;
-            b2 = m->r->l[line_index].p[j].second;
-
-            if (a2 == b1 && b2 == a1)
-            {
-                found_symmetric = true;
+    int x, y, x2, y2;
+    bool symmetric;
+    //R (a a) (b b) (b c) (c b)
+    for (int i = 0; i < rel_cardinality; i++){
+        symmetric = false;
+        for(int j = 0; j < rel_cardinality; j++){
+            x = m->r->l[line_index].p[i].first;
+            y = m->r->l[line_index].p[i].second;
+            x2 = m->r->l[line_index].p[j].first;
+            y2 = m->r->l[line_index].p[j].second;
+            if (x == y2 && y == x2){
+                symmetric = true;
             }
         }
-        if (!found_symmetric){
+        if(!symmetric){
             printf("false\n");
-            return false;
+            break;
         }
     }
-    printf("true\n");
-    return true;
-}
-
-int transitive(Main *m, int line_index)
-{
-
-    int rel_cardinality = m->r->l[line_index].cardinality;
-    int a1, b1, a2, b2, c1, c2;
-    bool found_transitive;
-
-    for (int i = 0; i < rel_cardinality; i++)
-    {
-        a1 = m->r->l[line_index].p[i].first;
-        b1 = m->r->l[line_index].p[i].second;
-        found_transitive = false;
-
-        for (int j = 0; j < rel_cardinality; j++)
-        {
-            if (j == i)
-            {
-                continue;
-            }
-            b2 = m->r->l[line_index].p[j].first;
-            if (b2 == b1)
-            {
-                printf("mala by byt 3 it. a je: %d\n", j);
-                c1 = m->r->l[line_index].p[j].second;
-
-                for (int k = 0; k < rel_cardinality; k++)
-                {
-                    if (k == j)
-                    {
-                        continue;
-                    }
-                    a2 = m->r->l[line_index].p[k].first;
-                    c2 = m->r->l[line_index].p[k].second;
-                    if (a2 == a1 && c2 == c1)
-                    {
-                        found_transitive = true;
-                    }
-                }
-            }
-        }
-        if (found_transitive)
-        {
-            printf("true\n");
-            return true;
-        }
+    if(symmetric){
+        printf("true\n");
     }
-    printf("false\n");
-    return false;
 }
 
 // * Funkce vraci zdali je relace funkci
@@ -1053,179 +1017,127 @@ bool is_function(Main *m, int line_index_a)
     return true;
 }
 
-//* Funkce vraci zda-li je relace reflexivni.
-bool is_reflexive(Main *m, int line_index_a)
-{
-    int i, j, k, l, h, f;
-    int cardinality = m->r->l[line_index_a].cardinality;
-    int *reflex = malloc(sizeof(int) * cardinality);
-    int index = 0;
+void is_reflexive(Main *m, int line_index_a){
+    int universum_cardinality = m->u->universum_cardinality;
+    int rel_cardinality = m->r->l[line_index_a].cardinality;
+    int reflex_count = 0;
 
-    for (i = 0; i < cardinality; i++)
-    {
-        int x_index = m->r->l[line_index_a].p[i].first;
-        int y_index = m->r->l[line_index_a].p[i].second;
-
-        // printf("%d\n", x_index);
-        // printf("%d\n", y_index);
-        // printf("%d toto je X index\n", x_index);
-        for (j = 0; j < cardinality; j++)
-        {
-
-            // printf("%d toto je Y index\n", y_index);
-            if (x_index == y_index)
-            {
-                // printf("shoda\n");
-
-                for (k = 0; k <= index; k++)
-                {
-                    if (x_index == reflex[k])
-                        break;
-                    if (k == index)
-                    {
-                        reflex[index] = x_index;
-                        // printf("%d\n", reflex[index]);
-
-                        index++;
-                        break;
-                    }
-                }
-                // printf("shoda\n");
-                // reflexivity = true;
-            }
+    for (int i = 0; i < rel_cardinality; i++){
+        if(m->r->l[line_index_a].p[i].first == m->r->l[line_index_a].p[i].second){
+            reflex_count++;
         }
     }
-    for (l = 0; l < cardinality; l++)
-    {
-        int check = m->r->l[line_index_a].p[l].first;
-        int backwards_check = m->r->l[line_index_a].p[l].second;
-        // printf("Check int: %d\n", check);
-        for (h = 0; h <= index; h++)
-        {
-            // printf("CISLO DPC :%d\n", h);
-            // printf("Index num:%d\n", reflex[h]);
-
-            if (check == reflex[h] && h <= index)
-            {
-                // printf("Shooda\n");
-                break;
-            }
-            if (check != reflex[h] && h == index)
-            {
-                printf("false\n");
-                free(reflex);
-                return false;
-            }
-        }
-        for (f = 0; f <= index; f++)
-        {
-            if (backwards_check == reflex[f] && f <= index)
-            {
-                // printf("Shooda\n");
-                break;
-            }
-            if (backwards_check != reflex[h] && f == index)
-            {
-                printf("false\n");
-                free(reflex);
-                return false;
-            }
-        }
+    if(reflex_count != universum_cardinality){
+        printf("false\n");
     }
-    free(reflex);
-    printf("true\n");
-    return true;
+    else{
+        printf("true\n");
+    }
 }
 
 //* Funkce vraci zda-li je relace asymetricka.
-bool is_asymmetric(Main *m, int line_index_a)
-{
-    int i, j;
-    bool asymmetricity_x;
-    int cardinality = m->r->l[line_index_a].cardinality;
-    for (i = 0; i < cardinality; i++)
-    {
-        int x_index = m->r->l[line_index_a].p[i].first;
-        int y_index = m->r->l[line_index_a].p[i].second;
+// bool is_asymmetric(Main *m, int line_index_a)
+// {
+//     int i, j;
+//     bool asymmetricity_x;
+//     int cardinality = m->r->l[line_index_a].cardinality;
+//     for (i = 0; i < cardinality; i++)
+//     {
+//         int x_index = m->r->l[line_index_a].p[i].first;
+//         int y_index = m->r->l[line_index_a].p[i].second;
 
-        // printf("%d toto je X index\n", x_index);
-        for (j = 0; j < cardinality; j++)
-        {
-            asymmetricity_x = false;
-            int x_index2 = m->r->l[line_index_a].p[j].second;
-            int y_index2 = m->r->l[line_index_a].p[j].first;
+//         // printf("%d toto je X index\n", x_index);
+//         for (j = 0; j < cardinality; j++)
+//         {
+//             asymmetricity_x = false;
+//             int x_index2 = m->r->l[line_index_a].p[j].second;
+//             int y_index2 = m->r->l[line_index_a].p[j].first;
 
-            // printf("%d toto je Y index\n", y_index);
-            if (x_index == x_index2 && y_index == y_index2)
-            {
-                // printf("shoda\n");
-                asymmetricity_x = true;
+//             // printf("%d toto je Y index\n", y_index);
+//             if (x_index == x_index2 && y_index == y_index2)
+//             {
+//                 // printf("shoda\n");
+//                 asymmetricity_x = true;
+//                 break;
+//             }
+//             if (j < cardinality && (x_index != x_index2 || y_index != y_index2))
+//             {
+//                 continue;
+//             }
+//         }
+//         if (asymmetricity_x == true)
+//         {
+//             printf("false\n");
+//             return false;
+//         }
+//     }
+
+//     printf("true\n");
+//     return true;
+// }
+
+void is_asymmetric(Main *m, int line_index){
+
+    // int line_index = m->r->l->line_index;
+    int relation_cardinality = m->r->l[line_index].cardinality;
+    bool asymetric = true;
+    int x,y,x2,y2;
+    //R (a a) (c c) (c a) - true
+    for(int i = 0; i < relation_cardinality; i++){
+
+        for(int j = 0; j < relation_cardinality; j++){
+            x = m->r->l[line_index].p[i].first; // c
+            y = m->r->l[line_index].p[i].second; // a
+            x2 = m->r->l[line_index].p[j].first; // a
+            y2 = m->r->l[line_index].p[j].second; // a
+            asymetric = true;
+            if ((x == y2 && y == x2) && x != y){
+                asymetric = false;
                 break;
             }
-            if (j < cardinality && (x_index != x_index2 || y_index != y_index2))
-            {
-                continue;
-            }
         }
-        if (asymmetricity_x == true)
-        {
+        if(!asymetric){
             printf("false\n");
-            return false;
+            break;
         }
     }
-
-    printf("true\n");
-    return true;
+    if(asymetric){
+        printf("true\n");
+    }
 }
 
-//! Funkce vraci zda-li je relace tranzitivni.
-bool transitivity(Main *m, int line_index_a)
-{
-    int i, j, k;
-    bool transitive;
+bool transitive(Main *m, int line_index_a){
+    int i,j,k;
     int relation_cardinality = m->r->l[line_index_a].cardinality;
-    for (i = 0; i < relation_cardinality; i++)
-    {
-        int first_x_index = m->r->l[line_index_a].p[i].first;
-        int first_y_index = m->r->l[line_index_a].p[i].second;
-
-        for (j = 0; j < relation_cardinality; j++)
-        {
-            int second_x_index = m->r->l[line_index_a].p[j].first;
-            int second_y_index = m->r->l[line_index_a].p[j].second;
-
+    bool transitive;
+    int first_x, first_y, second_x, second_y, third_x, third_y;
+    for(i = 0; i < relation_cardinality; i++){
+        first_x = m->r->l[line_index_a].p[i].first;
+        first_y = m->r->l[line_index_a].p[i].second;
+        for(j = 0; j< relation_cardinality; j++){
+            second_x = m->r->l[line_index_a].p[j].first;
+            second_y = m->r->l[line_index_a].p[j].second;
             transitive = false;
-            if (second_x_index == first_y_index && second_y_index == first_x_index)
-            {
-                transitive = true;
-                break;
-            }
-        }
-        if (transitive == false)
-            continue;
-
-        for (k = 0; k < relation_cardinality; k++)
-        {
-            int x_check = m->r->l[line_index_a].p[k].first;
-            int y_check = m->r->l[line_index_a].p[k].second;
-            if (x_check == first_x_index && y_check == first_x_index)
-            {
-                break;
-            }
-            if (k + 1 == relation_cardinality)
-            {
-                printf("false\n");
-                return false;
+            if(first_y == second_x){
+                for(k = 0; k < relation_cardinality; k++){
+                     third_x = m->r->l[line_index_a].p[k].first;
+                     third_y = m->r->l[line_index_a].p[k].second;
+                     if(first_x == third_x && second_y == third_y){
+                         transitive = true;
+                     }
+                }
+                if(!transitive){
+                    printf("false\n");
+                    return false;
+                }
             }
         }
     }
-
     printf("true\n");
     return true;
 }
 
-void codomain(Main *m, int line_index_a)
-{
+void codomain(Main *m, int line_index_a){
     int i, j;
     int current_element;
     int index = 0;
@@ -1233,23 +1145,19 @@ void codomain(Main *m, int line_index_a)
     int *obor_hodnot = malloc(sizeof(int) * cardinality);
     bool shoda;
 
-    for (i = 0; i < cardinality; i++)
-    {
+    for (i = 0; i < cardinality; i++){
         shoda = false;
         // printf("Neco se deje v prvnim cyklu\n");
         current_element = m->r->l[line_index_a].p[i].second;
-        for (j = 0; j < index; j++)
-        {
+        for (j = 0; j < index; j++){
             // printf("Neco se deje v druhem cyklu\n");
 
-            if (obor_hodnot[j] == current_element)
-            {
+            if (obor_hodnot[j] == current_element){
                 shoda = true;
                 break;
             }
         }
-        if (shoda == false)
-        {
+        if (shoda == false){
             obor_hodnot[index] = current_element;
             index++;
             continue;
@@ -1260,8 +1168,7 @@ void codomain(Main *m, int line_index_a)
 }
 // * Tiskne definicni obor.
 
-void domain(Main *m, int line_index_a)
-{
+void domain(Main *m, int line_index_a){
     int i, j;
     int current_element;
     int index = 0;
@@ -1269,23 +1176,19 @@ void domain(Main *m, int line_index_a)
     int *definicni_obor = malloc(sizeof(int) * cardinality);
     bool shoda;
 
-    for (i = 0; i < cardinality; i++)
-    {
+    for (i = 0; i < cardinality; i++){
         shoda = false;
         // printf("Neco se deje v prvnim cyklu\n");
         current_element = m->r->l[line_index_a].p[i].first;
-        for (j = 0; j < index; j++)
-        {
+        for (j = 0; j < index; j++){
             // printf("Neco se deje v druhem cyklu\n");
 
-            if (definicni_obor[j] == current_element)
-            {
+            if (definicni_obor[j] == current_element){
                 shoda = true;
                 break;
             }
         }
-        if (shoda == false)
-        {
+        if (shoda == false){
             definicni_obor[index] = current_element;
             index++;
             continue;
@@ -1350,13 +1253,27 @@ int function_call(Main *m, int func_index, int par1, int par2, int par3){
     int set_1 = set_find_index(m,par1);
     int set_2 = set_find_index(m,par2);
     int set_3 = set_find_index(m,par3);
+    // printf("f: %d r:%d s1:%d s2:%d s3:%d\n",func_index, rel_1, set_1, set_2, set_3);
+    // printf("func_indx >= 10: %d\n", func_index>=10);
+    // printf("(set_1 == -1 || set_2 == -1) : %d\n",(set_1 == -1 || set_2 == -1));
+    if (func_index <= 2 && set_1 == -1){
+        fprintf(stderr, "ERROR: wrong line argument!\n");
+        return -1;
+    }
+    if ((func_index >= 3 && func_index <= 9) && rel_1 == -1){
+        fprintf(stderr, "ERROR: wrong line argument!\n");
+        return -1;
+    }
+    if((func_index >= 10 && func_index <= 15) && (set_1 == -1 || set_2 == -1)){
+        fprintf(stderr, "ERROR: wrong line argument!\n");
+        return -1;
+    }
+    if((func_index >= 16 && func_index <= 18) && (rel_1 == -1 || set_2 == -1 || set_3 == -1)){
+        fprintf(stderr, "ERROR: wrong line argument!\n");
+        return -1;
+    }
     (void) set_3;
-    // printf(" r:%d s1:%d s2:%d s3:%d\n", rel_1,set_1, set_2,set_3);
 
-    // if(par1 == 0 && par2 == 0 && par3 == 0){
-    //     fprintf(stderr,"Invalid function syntax\n");
-    //     return -1;
-    // }
     switch(func_index) {
         case 0 :
             if (set_2 || set_3 != 0)
@@ -1366,6 +1283,9 @@ int function_call(Main *m, int func_index, int par1, int par2, int par3){
             printf("%d\n",m->s->l[set_1].cardinality);
             break;
         case 2 :
+            if(set_1 == -1){
+                return -1;
+            }
             do_complement(m,set_1);
             break;
         case 3 :
@@ -1378,6 +1298,7 @@ int function_call(Main *m, int func_index, int par1, int par2, int par3){
             is_asymmetric(m,rel_1);
             break;
         case 6 :
+            // transitivity(m,rel_1);
             // transitivity(m,rel_1);
             transitive(m,rel_1);
             break;
@@ -1477,7 +1398,7 @@ int function_parser(FILE *file, Main *m){
             // printf("temp: %s\n",temp);
             func_num = find_function_keyword(temp,1);
             if (func_num == -1){
-                fprintf(stderr,"Wrong function keyword");
+                fprintf(stderr,"ERROR: Wrong function keyword\n");
                 return -1;
                 }
         }
@@ -1495,17 +1416,14 @@ int function_parser(FILE *file, Main *m){
         num_of_parsed +=parse_num(file,&secondnum,&character);
         num_of_parsed +=parse_num(file,&thirdnum,&character);
     }
-    if((func_num < 9 && num_of_parsed != 1) || (func_num > 9 && num_of_parsed != 2) || (func_num > 15 && num_of_parsed > 3) || (func_num > 15 && num_of_parsed < 3) ){
-        fprintf(stderr,"Function has a wrong number of parameters\n");
+    if((func_num < 9 && num_of_parsed != 1) || (func_num > 9 && func_num <= 15 && num_of_parsed != 2) || (func_num > 15 && num_of_parsed != 3)){
+        fprintf(stderr,"ERROR: Function has a wrong number of parameters\n");
         return -1;
     }
 
-    if(function_call(m, func_num, firstnum, secondnum, thirdnum))
-        return 0;
-    else{
-        printf("this return\n");
+    if(function_call(m, func_num, firstnum, secondnum, thirdnum) == -1)
         return -1;
-    }
+    return 0;
 }
 
 /**
@@ -1516,13 +1434,13 @@ int function_parser(FILE *file, Main *m){
 void print_universum(Main *m)
 {
     // U -> element -> mezera until last element -> \n
-    printf("U ");
+    printf("U");
     for (int i = 0; i < m->u->universum_cardinality; i++)
     {
+        printf(" ");
         printf("%s", m->u->elements[i].element);
         if (i == m->u->universum_cardinality - 1)
             break;
-        printf(" ");
     }
     printf("\n");
 }
@@ -1572,8 +1490,10 @@ void print_relation(Main *m){
     // R ->( -> element1 -> mezera -> element2 ->) -> until last pair -> \n
     int rel_index = 0;
     int line_cardinality = m->r->line_cardinality;
-
-    printf("R ");
+    if(m->r->l[line_cardinality].cardinality == 0)
+        printf("R");
+    else
+        printf("R ");
     for (int i = 0; i < m->r->l[line_cardinality].cardinality; i++){
         rel_index = m->r->l[line_cardinality].p[i].first; // first pair
 
@@ -1635,9 +1555,10 @@ int set_line_add(Main *m, int line_index){
 
 int main(int argc, char *argv[]){
     FILE *file;
-
+    int return_value;
     // printf("argc:%d argv[%d]: %s\n\n",argc,1,argv[1]);
-
+    bool error = false;
+    bool uni_loaded = false;
     if (argc > 2){
         fprintf(stderr, "Only one input is allowed");
         return EXIT_FAILURE;
@@ -1661,18 +1582,28 @@ int main(int argc, char *argv[]){
     }
 
     while (1){
-        int return_value = type_check(file);
+        if(line_index > 999){
+            fprintf(stderr,"ERROR: too many lines!");
+            error = 1;
+            break;
+            // return -1;
+        }
+        return_value = type_check(file);
         if (return_value == 2){
             if(load_universum(file, m, line_index) == -1){
-                main_dtor(m, 3);
-                fclose(file);
-                return -1;
+                // main_dtor(m, 3);
+                // fclose(file);
+                // return EXIT_FAILURE;
+                error = 1;
+                break;
             }
             if(is_universum_valid(m) == -1){
-                return -1;
+                // return EXIT_FAILURE;
+                error = 1;
+                break;
             }
+            uni_loaded = true;
             print_universum(m);
-
         }
         if(return_value == 7){
             uni_add_element(m, "", -1);
@@ -1680,37 +1611,49 @@ int main(int argc, char *argv[]){
             set_line_add(m, line_index);
             set_add_element(m, -1, 0);
             (m->s->line_cardinality)++;
+            uni_loaded = true;
 
         }
         if (return_value == 3){
             set_line_add(m, line_index);
             if(set_to_index(file, m) == -1){
-                main_dtor(m, 3);
-                fclose(file);
-                return -1;
+                // main_dtor(m, 3);
+                // fclose(file);
+                // return EXIT_FAILURE;
+                error = 1;
+                break;
+            }
+            if(is_set(m) == -1){
+                // main_dtor(m, 3);
+                // fclose(file);
+                // return EXIT_FAILURE;
+                error = 1;
+                break;
             }
             print_set_old(m);
             (m->s->line_cardinality)++;
         }
-        if (return_value == 8){
+        if (return_value == 8){ //empty set
             set_line_add(m,line_index);
             set_add_element(m, -1, 0);
-            if(!is_set(m)){
-                main_dtor(m, 3);
-                fclose(file);
-                return -1;
-            }
             print_set_old(m);
             (m->s->line_cardinality)++;
         }
         if (return_value == 4){
             relation_line_add(m, line_index);
             if((relation_to_index(file, m)) == -1){
-                fprintf(stderr,"wrong relation syntax");
-                line_index++;
-                main_dtor(m, 3);
-                fclose(file);
-                return EXIT_FAILURE;
+                // main_dtor(m, 3);
+                // fclose(file);
+                // return EXIT_FAILURE;
+                error = 1;
+                break;
+            }
+            if(is_relation(m) == -1){
+                // main_dtor(m,3);
+                // fclose(file);
+                // return EXIT_FAILURE;
+                error = 1;
+                break;
             }
             print_relation(m);
             (m->r->line_cardinality)++;
@@ -1723,27 +1666,52 @@ int main(int argc, char *argv[]){
         }
         if (return_value == 5){
             if((function_parser(file, m)) == -1){
-                main_dtor(m,3);
-                fclose(file);
-                return EXIT_FAILURE;
+                // main_dtor(m,3);
+                // fclose(file);
+                // return EXIT_FAILURE;
+                error = 1;
+                break;
             }
-
+            break;
         }
-
         if (!return_value){
             break;
         }
         if(return_value == -1){
-            fprintf(stderr, "Syntax error.");
-            main_dtor(m,3);
-            fclose(file);
-            return EXIT_FAILURE;
+            fprintf(stderr, "ERROR: Syntax error.\n");
+            // main_dtor(m,3);
+            // fclose(file);
+            // return EXIT_FAILURE;
+            error = 1;
+            break;
         }
         if(return_value != 5)
             line_index++;
+        if(!uni_loaded){
+            fprintf(stderr, "ERROR: Universum not defined!\n");
+            error = 1;
+            break;
+        }
     }
-
+    while(!error){
+        return_value = type_check(file);
+        if (!return_value){
+            break;
+        }
+        if(return_value != 5){
+            fprintf(stderr,"ERROR: expected COMMAND\n");
+            error = 1;
+            break;
+        }
+        if((function_parser(file, m)) == -1){
+                error = 1;
+                break;
+        }
+    }
     main_dtor(m, 3);
     fclose(file);
+    if(error){
+        return EXIT_FAILURE;
+    }
     return 0;
 }
