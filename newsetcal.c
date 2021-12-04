@@ -14,6 +14,8 @@ Last updated 3.12.2021.
 
 #define TRUE 1
 #define FALSE 0
+#define NUM_OF_KEYWORDS 21
+#define KEYWORD_MAX_LEN 14
 
 /**
  * @brief
@@ -81,6 +83,9 @@ typedef struct
 } Main;
 
 void print_set(Main *m, int cardinality, int *set);
+int set_line_add(Main *m, int line_index);
+int set_add_element(Main *m, int element_index, int idx);\
+int is_set(Main *m);
 
 /**
  * @brief
@@ -280,44 +285,45 @@ Main *main_ctor()
  * @param file
  * @return int
  */
-int type_check(FILE *file)
-{
+int type_check(FILE *file){
     char character = getc(file);
-
-    if (character == 'U')
-    {
-        if (getc(file) == ' ')
-        {
+    // printf("typecheck char: %d\n", character);
+    if (character == 'U'){
+        if((character = getc(file)) == '\n' || character == EOF){
+            return 7; //empty uni
+        }
+        if (character == ' '){
             return 2;
         }
     }
-    if (character == 'S')
-    {
-        if (getc(file) == ' ')
-        {
+    if (character == 'S'){
+        if ((character = getc(file)) == '\n' || character == EOF){
+            return 8; //empty set
+        }
+        else if (character == ' '){
             return 3;
         }
     }
-    if (character == 'R')
-    {
-        if (getc(file) == ' ')
-        {
+    if (character == 'R'){
+        if ((character = getc(file)) == '\n' || character == EOF){
+            return 9; //empty relation
+        }
+        else if (character == ' '){
             return 4;
         }
     }
-    if (character == 'C')
-    {
-        if (getc(file) == ' ')
-        {
+    if (character == 'C'){
+        if (getc(file) == ' '){
             return 5;
         }
     }
-    if (character == EOF)
-    {
+    if (character == EOF){
         return 0;
     }
-
-    return 1;
+    if (character == 10){
+        return 0;
+    }
+    return -1;
 }
 
 /**
@@ -338,10 +344,57 @@ int uni_add_element(Main *m, char *element, int idx)
         if ((m->u->elements) == NULL)
             return false;
     }
-    strcpy(m->u->elements[idx].element, element);
-    (m->u->universum_cardinality)++;
+    if(idx == -1){
+        m->u->universum_cardinality = 0;
+        
+    }
+    else{
+        strcpy(m->u->elements[idx].element, element);
+        (m->u->universum_cardinality)++;
+    }
     return TRUE;
 }
+
+int find_function_keyword(char *str,bool find_function){
+
+    int keyword_count = 20;
+    char functions[NUM_OF_KEYWORDS][KEYWORD_MAX_LEN] = {
+    // 1 input 0-9
+    {"empty"},
+    {"card"},
+    {"complement"},
+    {"reflexive"},
+    {"symmetric"},
+    {"antisymmetric"},
+    {"transitive"},
+    {"function"},
+    {"domain"},
+    {"codomain"},
+    // 2 inputs 10-15
+    {"union"},
+    {"intersect"},
+    {"minus"},
+    {"subseteq"},
+    {"subset"},
+    {"equals"},
+    // 3 inputs 16-18
+    {"injective"},
+    {"surjective"},
+    {"bijective"},
+    {"true"},
+    {"false"},
+    };
+    
+    if(find_function)
+        keyword_count = 18;
+
+    for (int i = 0; i < keyword_count; i++){
+        if (!(strcmp(str, functions[i])))
+            return i;
+    }
+    return -1;
+}
+
 
 /**
  * @brief
@@ -351,7 +404,7 @@ int uni_add_element(Main *m, char *element, int idx)
  * @param idx
  * @return int
  */
-int load_universum(FILE *file, Main *m)
+int load_universum(FILE *file, Main *m, int line_index)
 {
     char element[31];
     char character;
@@ -377,6 +430,10 @@ int load_universum(FILE *file, Main *m)
         if (character == ' ' || character == '\n')
         {
             element[element_len] = '\0';
+            if(find_function_keyword(element, 0) != -1){
+                fprintf(stderr, "ERROR: Forbidden word defined in universum!");
+                return -1;
+            }
             uni_add_element(m, element, idx);
             if (m->u->elements[idx].element == NULL)
             {
@@ -386,6 +443,26 @@ int load_universum(FILE *file, Main *m)
             idx++;
             element_len = 0;
             strcpy(element, "");
+        }
+    }
+    set_line_add(m, line_index);
+    for(int i = 0; i < m->u->universum_cardinality; i++)
+        set_add_element(m, i, i);
+    if(!is_set(m)){
+        return -1;
+    }
+    (m->s->line_cardinality)++;
+    return 1;
+}
+
+int is_universum_valid(Main *m){
+    int universum_cardinality = m->u->universum_cardinality;
+    for (int i = 0; i < universum_cardinality; i++){
+        for(int j = i+1; j < universum_cardinality; j++){
+            if (!strcmp(m->u->elements[i].element,m->u->elements[j].element)){
+                fprintf(stderr, "ERROR: Universum has duplicate elements\n");
+                return -1;
+            }
         }
     }
     return 1;
@@ -423,7 +500,8 @@ int is_in_universum(Main *m, char *str)
 int set_add_element(Main *m, int element_index, int idx)
 {
     int line_cardinality = m->s->line_cardinality;
-    // printf("line cardinality :%d\n", line_cardinality);
+    // printf("set_add_element line_cardinality: %d\n", line_cardinality);
+    // printf("m->s->l[line_cardinality].cardinality : %d\n", m->s->l[line_cardinality].cardinality);
     // printf("m->s->l[%d].cardinality: %d\n",line_cardinality, m->s->l[line_cardinality].cardinality);
     if (m->s->l[line_cardinality].cardinality + 1 > m->s->l[line_cardinality].capacity)
     {
@@ -436,10 +514,33 @@ int set_add_element(Main *m, int element_index, int idx)
         }
     }
     // printf("m->s->l[%d].set_items ptr: %p\n", line_cardinality, m->s->l[line_cardinality].set_items);
-
-    m->s->l[line_cardinality].set_items[idx] = element_index;
-    (m->s->l[line_cardinality].cardinality)++;
+    if (element_index == -1){
+        m->s->l[line_cardinality].cardinality = 0;
+    }
+    else{
+        m->s->l[line_cardinality].set_items[idx] = element_index;
+        (m->s->l[line_cardinality].cardinality)++;
+    }
     return -1;
+}
+
+int is_set(Main *m){
+    int line_cardinality = m->s->line_cardinality;
+    int set_cardinality = m->s->l[line_cardinality].cardinality;
+    int num1, num2 = 0;
+    // printf("is_set:\nline_cardinality: %d\nset_cardinality: %d\n", line_cardinality, set_cardinality);
+    // [1,0,2,3,2,4]
+    for (int i = 0; i < set_cardinality; i++){
+        num1 = m->s->l[line_cardinality].set_items[i];
+        for(int j = i+1; j < set_cardinality; j++){
+            num2 = m->s->l[line_cardinality].set_items[j];
+            if (num1 == num2){
+                fprintf(stderr,"Element cannot be twice in Universe/Set.\n");
+                return 0;
+            }
+        }
+    }
+    return 1;
 }
 
 /**
@@ -610,7 +711,6 @@ int relation_to_index(FILE *file, Main *m)
 
 int set_find_index(Main *m, int line_index)
 {
-
     for (int i = 0; i < m->s->line_cardinality; i++)
     {
         if (m->s->l[i].line_index == line_index)
@@ -776,11 +876,9 @@ bool subseteq(Main *m, int line_index_a, int line_index_b)
         }
         if (!element_found)
         {
-            printf("false\n");
             return false;
         }
     }
-    printf("true\n");
     return true;
 }
 
@@ -881,11 +979,12 @@ int transitive(Main *m, int line_index)
             b2 = m->r->l[line_index].p[j].first;
             if (b2 == b1)
             {
+                printf("mala by byt 3 it. a je: %d\n", j);
                 c1 = m->r->l[line_index].p[j].second;
 
                 for (int k = 0; k < rel_cardinality; k++)
                 {
-                    if (k == i || k == j)
+                    if (k == j)
                     {
                         continue;
                     }
@@ -898,14 +997,14 @@ int transitive(Main *m, int line_index)
                 }
             }
         }
-        if (!found_transitive)
+        if (found_transitive)
         {
-            printf("false\n");
-            return false;
+            printf("true\n");
+            return true;
         }
     }
-    printf("true\n");
-    return true;
+    printf("false\n");
+    return false;
 }
 
 // * Funkce vraci zdali je relace funkci
@@ -1079,71 +1178,51 @@ bool is_asymmetric(Main *m, int line_index_a)
     return true;
 }
 
-// //* Funkce vraci zda-li je relace tranzitivni.
-// bool is_transitive(Main *m, int line_index_a)
-// {
-//     int i, j;
-//     bool transitivity_x;
-//     int cardinality = m->r->l[line_index_a].cardinality;
-//     for (i = 0; i < cardinality; i++)
-//     {
-//         int x_index = m->r->l[line_index_a].p[i].first;
-//         // printf("%d toto je X index\n", x_index);
-//         for (j = 0; j < cardinality; j++)
-//         {
-//             transitivity_x = false;
-//             int y_index = m->r->l[line_index_a].p[j].second;
-//             // printf("%d toto je Y index\n", y_index);
-//             if (x_index == y_index)
-//             {
-//                 // printf("shoda\n");
-//                 transitivity_x = true;
-//                 break;
-//             }
-//             if (j < cardinality && x_index != y_index)
-//             {
-//                 continue;
-//             }
-//         }
-//         if (j == cardinality && transitivity_x == false)
-//         {
-//             printf("Relace neni tranzitivni\n");
-//             return false;
-//         }
-//     }
+//! Funkce vraci zda-li je relace tranzitivni.
+bool transitivity(Main *m, int line_index_a)
+{
+    int i, j, k;
+    bool transitive;
+    int relation_cardinality = m->r->l[line_index_a].cardinality;
+    for (i = 0; i < relation_cardinality; i++)
+    {
+        int first_x_index = m->r->l[line_index_a].p[i].first;
+        int first_y_index = m->r->l[line_index_a].p[i].second;
 
-//     int k, l;
-//     bool transitivity_y;
-//     for (k = 0; k < cardinality; ++k)
-//     {
-//         int x_index = m->r->l[line_index_a].p[k].first;
-//         // printf("%d toto je X index\n", x_index);
-//         for (l = 0; l < cardinality; l++)
-//         {
-//             transitivity_y = false;
-//             int y_index = m->r->l[line_index_a].p[l].second;
-//             // printf("%d toto je Y index\n", y_index);
-//             if (x_index == y_index)
-//             {
-//                 // printf("shoda\n");
-//                 transitivity_y = true;
-//                 break;
-//             }
-//             if (l < cardinality && x_index != y_index)
-//             {
-//                 continue;
-//             }
-//         }
-//         if (l == cardinality && transitivity_y == false)
-//         {
-//             printf("Relace neni tranzitivni\n");
-//             return false;
-//         }
-//     }
-//     printf("Relace je tranzitivni\n");
-//     return true;
-// }
-// * Tiskne obor hodnot.
+        for (j = 0; j < relation_cardinality; j++)
+        {
+            int second_x_index = m->r->l[line_index_a].p[j].first;
+            int second_y_index = m->r->l[line_index_a].p[j].second;
+
+            transitive = false;
+            if (second_x_index == first_y_index && second_y_index == first_x_index)
+            {
+                transitive = true;
+                break;
+            }
+        }
+        if (transitive == false)
+            continue;
+
+        for (k = 0; k < relation_cardinality; k++)
+        {
+            int x_check = m->r->l[line_index_a].p[k].first;
+            int y_check = m->r->l[line_index_a].p[k].second;
+            if (x_check == first_x_index && y_check == first_x_index)
+            {
+                break;
+            }
+            if (k + 1 == relation_cardinality)
+            {
+                printf("false\n");
+                return false;
+            }
+        }
+    }
+
+    printf("true\n");
+    return true;
+}
 
 void codomain(Main *m, int line_index_a)
 {
@@ -1266,20 +1345,21 @@ int injective(Main *m, int rel_line_index, int set_A_line_index, int set_B_line_
  * @return int
  */
 int function_call(Main *m, int func_index, int par1, int par2, int par3){
-
+    // printf("p1:%d p2:%d p:3%d\n", par1,par2,par3);
     int rel_1 = rel_find_index(m, par1);
     int set_1 = set_find_index(m,par1);
     int set_2 = set_find_index(m,par2);
     int set_3 = set_find_index(m,par3);
     (void) set_3;
-    // printf("%p %s %d %d %d\n", m, func_name, par1, par2, par3);
+    // printf(" r:%d s1:%d s2:%d s3:%d\n", rel_1,set_1, set_2,set_3);
 
-    if(par1 == 0 && par2 == 0 && par3 == 0){
-        fprintf(stderr,"Invalid function syntax\n");
-        return -1;
-    }
+    // if(par1 == 0 && par2 == 0 && par3 == 0){
+    //     fprintf(stderr,"Invalid function syntax\n");
+    //     return -1;
+    // }
     switch(func_index) {
         case 0 :
+            if (set_2 || set_3 != 0)
             is_empty(m,set_1);
             break;
         case 1 :
@@ -1298,7 +1378,8 @@ int function_call(Main *m, int func_index, int par1, int par2, int par3){
             is_asymmetric(m,rel_1);
             break;
         case 6 :
-            transitive(m,set_1);
+            // transitivity(m,rel_1);
+            transitive(m,rel_1);
             break;
         case 7 :
             is_function(m,rel_1);
@@ -1319,7 +1400,10 @@ int function_call(Main *m, int func_index, int par1, int par2, int par3){
             minus(m,set_1,set_2);
             break;
         case 13 :
-            subseteq(m,set_1,set_2);
+            if(subseteq(m,set_1,set_2))
+                printf("true\n");
+            else
+                printf("false\n");
             break;
         case 14 :
             subset(m,set_1,set_2);
@@ -1342,8 +1426,39 @@ int function_call(Main *m, int func_index, int par1, int par2, int par3){
     return true;
 }
 
-int function_parser(FILE *file, Main *m)
-{
+/**
+ * @brief 
+ * 
+ * @param file 
+ * @param savednum 
+ * @param character 
+ * @return int 
+ */
+int parse_num(FILE *file, int *savednum, int *character){
+    //C command 333333 333 333 333\n
+    // char character = getc(file);
+    char *ptr;
+    int index = 0;
+    char number[5];
+    strcpy(number,"");
+    // printf("number before:%s\n",number);
+    while(*character != '\n' && *character != EOF){
+            number[index++] = *character;
+            *character = getc(file);
+            //loads number
+            if(*character == ' ' || *character == '\n' || *character == EOF){
+                number[index] = '\0';
+                // *savednum = atoi(number);
+                *savednum = strtol(number,&ptr,10);
+                // printf("ptr:%s\n",ptr);
+                // printf("savenum:%d\n",*savednum);
+                return 1;
+            }
+    }
+    return 0;
+}
+
+int function_parser(FILE *file, Main *m){
     char temp[31];
     int index = 0;
     int character = fgetc(file);
@@ -1351,31 +1466,8 @@ int function_parser(FILE *file, Main *m)
     int func_num = 0;
     int firstnum = 0, secondnum = 0, thirdnum = 0;
 
-    char functions[19][14] = {
-        // 1 input 0-9
-        {"empty"},
-        {"card"},
-        {"complement"},
-        {"reflexive"},
-        {"symmetric"},
-        {"antisymmetric"},
-        {"transitive"},
-        {"function"},
-        {"domain"},
-        {"codomain"},
-        // 2 inputs 10-15
-        {"union"},
-        {"intersect"},
-        {"minus"},
-        {"subseteq"},
-        {"subset"},
-        {"equals"},
-        // 3 inputs 16-18
-        {"injective"},
-        {"surjective"},
-        {"bijective"}};
-    while (character != ' ' && character != '\n')
-    {
+
+    while (character != ' ' && character != '\n'){
         temp[index++] = character;
         // printf("char: %c\n",character);
         character = fgetc(file);
@@ -1383,48 +1475,35 @@ int function_parser(FILE *file, Main *m)
         {
             temp[index] = '\0';
             // printf("temp: %s\n",temp);
-            for (func_num = 0; func_num < 18; func_num++)
-            {
-                if (strcmp(temp, functions[func_num]) == 0)
-                {
-                    break;
+            func_num = find_function_keyword(temp,1);
+            if (func_num == -1){
+                fprintf(stderr,"Wrong function keyword");
+                return -1;
                 }
-            }
-            if (strcmp(temp, functions[func_num]) != 0)
-            {
-                fprintf(stderr, "ERROR: Unknown function name\n");
+        }
+            if(character == '\n'){
+                fprintf(stderr,"ERROR: no function input given.\n");
                 return -1;
             }
-        }
+    }
     // TODO check if found function has exact number of parameters
-    }
-    // firstnum + space
-    character = fgetc(file);
-    if (character != '\n')
-        firstnum = (int)character - '0';
-    character = fgetc(file);
 
-    if (func_num > 9)
-    {
-        character = getc(file);
-        if (character != '\n')
-        {
-            secondnum = (int)character - '0';
-        }
-        character = getc(file);
-        if (func_num > 15)
-        {
-            character = getc(file);
-            if (character != '\n')
-                thirdnum = (int)character - '0';
-            character = getc(file);
-        }
+    int num_of_parsed = 0;
+    while(character != '\n' && character != EOF){
+        character = fgetc(file);
+        num_of_parsed +=parse_num(file,&firstnum,&character);
+        num_of_parsed +=parse_num(file,&secondnum,&character);
+        num_of_parsed +=parse_num(file,&thirdnum,&character);
     }
-    // printf("function: %s num1: %c, num2:%c, num3: %c\n",functions[func_num],firstnum,secondnum,thirdnum);
-    // function_call(m, functions[func_num], firstnum, secondnum, thirdnum);
+    if((func_num < 9 && num_of_parsed != 1) || (func_num > 9 && num_of_parsed != 2) || (func_num > 15 && num_of_parsed > 3) || (func_num > 15 && num_of_parsed < 3) ){
+        fprintf(stderr,"Function has a wrong number of parameters\n");
+        return -1;
+    }
+
     if(function_call(m, func_num, firstnum, secondnum, thirdnum))
         return 0;
     else{
+        printf("this return\n");
         return -1;
     }
 }
@@ -1454,32 +1533,30 @@ void print_universum(Main *m)
  * @param m
  * @return int
  */
-void print_set_old(Main *m)
-{
+void print_set_old(Main *m){
 
     int uni_index = 0;
     int line_cardinality = m->s->line_cardinality;
 
-    printf("S ");
+    printf("S");
     for (int i = 0; i < m->s->l[line_cardinality].cardinality; i++)
-    {
+    {   
+        printf(" ");
         uni_index = m->s->l[line_cardinality].set_items[i];
         printf("%s", m->u->elements[uni_index].element);
         if (i == m->s->l[line_cardinality].cardinality - 1)
             break;
-        printf(" ");
     }
     printf("\n");
 }
 
-void print_set(Main *m, int cardinality, int *set)
-{
-    printf("S ");
+void print_set(Main *m, int cardinality, int *set){
+    printf("S");
     for (int i = 0; i < cardinality; i++){
+        printf(" ");
         printf("%s", m->u->elements[set[i]].element);
         if(i == cardinality-1)
             break;
-        printf(" ");
     }
     printf("\n");
 }
@@ -1491,16 +1568,13 @@ void print_set(Main *m, int cardinality, int *set)
  * @return int
  */
 
-void print_relation(Main *m)
-{
+void print_relation(Main *m){
     // R ->( -> element1 -> mezera -> element2 ->) -> until last pair -> \n
-
     int rel_index = 0;
     int line_cardinality = m->r->line_cardinality;
 
     printf("R ");
-    for (int i = 0; i < m->r->l[line_cardinality].cardinality; i++)
-    {
+    for (int i = 0; i < m->r->l[line_cardinality].cardinality; i++){
         rel_index = m->r->l[line_cardinality].p[i].first; // first pair
 
         printf("(%s ", m->u->elements[rel_index].element);
@@ -1515,16 +1589,14 @@ void print_relation(Main *m)
     printf("\n");
 }
 
-int relation_line_add(Main *m, int line_index)
-{
+int relation_line_add(Main *m, int line_index){
     int line_cardinality = m->r->line_cardinality;
 
     if (m->r->line_cardinality + 1 > m->r->line_capacity)
     {
         m->r->line_capacity = m->r->line_capacity * 2 + 1;
         m->r->l = allocate_or_resize(m->r->l, m->r->line_capacity * sizeof(Relation_line));
-        if (m->r->l == NULL)
-        {
+        if (m->r->l == NULL){
             fprintf(stderr, "Memory could not be allocated\n");
             return -1;
         }
@@ -1535,16 +1607,13 @@ int relation_line_add(Main *m, int line_index)
     return true;
 }
 
-int set_line_add(Main *m, int line_index)
-{
+int set_line_add(Main *m, int line_index){
     int line_cardinality = m->s->line_cardinality;
 
-    if (m->s->line_cardinality + 1 > m->s->line_capacity)
-    {
+    if (m->s->line_cardinality + 1 > m->s->line_capacity){
         m->s->line_capacity = m->s->line_capacity * 2 + 1;
         m->s->l = allocate_or_resize(m->s->l, m->s->line_capacity * sizeof(Set_line));
-        if (m->s->l == NULL)
-        {
+        if (m->s->l == NULL){
             fprintf(stderr, "Memory could not be allocated\n");
             return -1;
         }
@@ -1564,14 +1633,12 @@ int set_line_add(Main *m, int line_index)
  */
 // **** FUNCTIONS ************************
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]){
     FILE *file;
 
     // printf("argc:%d argv[%d]: %s\n\n",argc,1,argv[1]);
 
-    if (argc > 2)
-    {
+    if (argc > 2){
         fprintf(stderr, "Only one input is allowed");
         return EXIT_FAILURE;
     }
@@ -1580,8 +1647,7 @@ int main(int argc, char *argv[])
     int line_index = 1;
     file = fopen(filename, "r");
 
-    if (file == NULL)
-    {
+    if (file == NULL){
         fprintf(stderr, "This file name is invalid");
         fclose(file);
         return -1;
@@ -1589,53 +1655,93 @@ int main(int argc, char *argv[])
 
     // init
     Main *m = main_ctor();
-    if (m == NULL)
-    {
+    if (m == NULL){
         fclose(file);
         return 1;
     }
 
-    while (1)
-    {
+    while (1){
         int return_value = type_check(file);
-        if (return_value == 2)
-        {
-            load_universum(file, m);
-            // save_as_set();
+        if (return_value == 2){
+            if(load_universum(file, m, line_index) == -1){
+                main_dtor(m, 3);
+                fclose(file);
+                return -1;
+            }
+            if(is_universum_valid(m) == -1){
+                return -1;
+            }
             print_universum(m);
+
         }
-        if (return_value == 3)
-        {
+        if(return_value == 7){
+            uni_add_element(m, "", -1);
+            print_universum(m);
             set_line_add(m, line_index);
-            set_to_index(file, m);
+            set_add_element(m, -1, 0);
+            (m->s->line_cardinality)++;
+
+        }
+        if (return_value == 3){
+            set_line_add(m, line_index);
+            if(set_to_index(file, m) == -1){
+                main_dtor(m, 3);
+                fclose(file);
+                return -1;
+            }
             print_set_old(m);
             (m->s->line_cardinality)++;
         }
-        if (return_value == 4)
-        {
+        if (return_value == 8){
+            set_line_add(m,line_index);
+            set_add_element(m, -1, 0);
+            if(!is_set(m)){
+                main_dtor(m, 3);
+                fclose(file);
+                return -1;
+            }
+            print_set_old(m);
+            (m->s->line_cardinality)++;
+        }
+        if (return_value == 4){
             relation_line_add(m, line_index);
             if((relation_to_index(file, m)) == -1){
                 fprintf(stderr,"wrong relation syntax");
                 line_index++;
                 main_dtor(m, 3);
+                fclose(file);
                 return EXIT_FAILURE;
             }
             print_relation(m);
             (m->r->line_cardinality)++;
         }
-        if (return_value == 5)
-        {
-            if((function_parser(file, m)) == -1)
-                return EXIT_FAILURE;
+        if(return_value == 9){
+            relation_line_add(m,line_index);
+            relation_add_element(m,-1,true,0);
+            print_relation(m);
+            (m->r->line_cardinality)++;
         }
-        if (!return_value)
-        {
+        if (return_value == 5){
+            if((function_parser(file, m)) == -1){
+                main_dtor(m,3);
+                fclose(file);
+                return EXIT_FAILURE;
+            }
+
+        }
+
+        if (!return_value){
             break;
         }
-        line_index++;
+        if(return_value == -1){
+            fprintf(stderr, "Syntax error.");
+            main_dtor(m,3);
+            fclose(file);
+            return EXIT_FAILURE;
+        }
+        if(return_value != 5)
+            line_index++;
     }
-    // while (1) {
-    // }
 
     main_dtor(m, 3);
     fclose(file);
