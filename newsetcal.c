@@ -75,17 +75,25 @@ typedef struct
 
 } Main;
 
+void *allocate_or_resize(void *ptr, unsigned int size);
+int init_universum(Main *m);
+int init_set(Main *m);
+int init_relation(Main *m);
+void main_dtor(Main *m, int depth);
+Main *main_ctor();
+int uni_add_element(Main *m, char *element, int idx);
 void print_set(Main *m, int cardinality, int *set);
 int set_line_add(Main *m, int line_index);
-int set_add_element(Main *m, int element_index, int idx);\
+int set_add_element(Main *m, int element_index, int idx);
 int is_set(Main *m);
+int find_function_keyword(char *str,bool find_function);
 
 /**
- * @brief
+ * @brief reallocates/allocates pointer pointing to an adress
  *
- * @param ptr
- * @param size
- * @return void*
+ * @param ptr pointer to address which needs to be reallocated
+ * @param size size in int which memory will be resized
+ * @return pointer to allocated memory or NULL if failed to allocate
  */
 void *allocate_or_resize(void *ptr, unsigned int size)
 {
@@ -130,7 +138,6 @@ int init_set(Main *m)
     m->s->l = malloc(sizeof(Set_line));
     if (m->s->l == NULL)
         return 0;
-    // m->s->l[0].set_items = NULL;
     m->s->l[0].line_index = 0;
     m->s->l[0].capacity = 0;
     m->s->l[0].cardinality = 0;
@@ -152,7 +159,6 @@ int init_relation(Main *m)
     m->r->l = malloc(sizeof(Relation_line));
     if (m->r->l == NULL)
         return 0;
-    // m->r->l[0].p = NULL;
     m->r->l[0].line_index = 0;
     m->r->l[0].capacity = 0;
     m->r->l[0].cardinality = 0;
@@ -162,7 +168,7 @@ int init_relation(Main *m)
 }
 
 /**
- * @brief
+ * @brief Function which deconstructs a main structure.
  *
  * @param m
  * @param depth
@@ -172,8 +178,6 @@ void main_dtor(Main *m, int depth)
     if(m->r->l->p != NULL)
     if (depth == 3)
     {
-
-        // depth 3
         if(m->r->l[0].p != NULL){
             free(m->r->l[0].p);
         }
@@ -229,12 +233,8 @@ Main *main_ctor()
     }
     if (init_universum(m) && init_set(m) && init_relation(m))
     {   
-        // m->s->l->set_items = NULL;
-        // m->r->l->p = NULL;
         m->s->l->set_items  = malloc(sizeof(Set_line));
         m->r->l->p = malloc(sizeof(Pairs));
-        // m->s->l->set_items = allocate_or_resize(m->s->l->set_items, sizeof(Set_line));
-        // m->r->l->p = allocate_or_resize(m->r->l->p, sizeof(Pairs));
         if (m->s->l->set_items == NULL || m->r->l->p == NULL)
         {
             main_dtor(m, 3);
@@ -252,8 +252,8 @@ Main *main_ctor()
 /**
  * @brief Function which checks whether the input is valid or if it is a empty universum/set/relation.
  *
- * @param file
- * @return int value 
+ * @param file 
+ * @return returns an int representing U/R/S/C or representing empty U/R/S
  */
 int type_check(FILE *file){
     char character = getc(file);
@@ -306,7 +306,7 @@ int type_check(FILE *file){
  * @param m represents the main structure.
  * @param element represents which element is to be added.
  * @param idx 
- * @return true if the element was a, false if not.
+ * @return true if the element was added, false if not.
  */
 int uni_add_element(Main *m, char *element, int idx)
 {
@@ -374,6 +374,13 @@ int find_function_keyword(char *str,bool find_function){
     return -1;
 }
 
+/**
+ * @brief Function which checks whether a word is composed of letters only.
+ * @param m points to main structure.
+ * @return True if its made up only of letters, else false.
+ * @see isalpha
+ */
+
 int is_alpha_only(char *str){
     for (int i = 0; str[i] != '\0'; i++){
         if(!isalpha((int)str[i]))
@@ -394,7 +401,7 @@ int load_universum(FILE *file, Main *m, int line_index)
 {
     char element[31];
     char character;
-    int idx = 0; // idx = m->u->universum_cardinality ????? mam pocit ze hej
+    int idx = 0;
     int element_len = 0;
 
     character = getc(file);
@@ -411,7 +418,6 @@ int load_universum(FILE *file, Main *m, int line_index)
         {
             element[element_len++] = character;
         }
-        // printf("character: %c\n", character);
         character = getc(file);
         if (character == ' ' || character == '\n')
         {
@@ -441,12 +447,17 @@ int load_universum(FILE *file, Main *m, int line_index)
     (m->s->line_cardinality)++;
     return 1;
 }
+/**
+ * @brief Function for checking whether an universum is valid. It checks for duplicity of elements within the universum.
+ * @param m points to main structure.
+ * @return True if it is a valid universum, false if it isn't.
+ */
 
 int is_universum_valid(Main *m){
     int universum_cardinality = m->u->universum_cardinality;
     for (int i = 0; i < universum_cardinality; i++){
         for(int j = i+1; j < universum_cardinality; j++){
-            if (!strcmp(m->u->elements[i].element,m->u->elements[j].element)){
+            if (strcmp(m->u->elements[i].element,m->u->elements[j].element) == 0){
                 fprintf(stderr, "ERROR: Universum has duplicate elements\n");
                 return -1;
             }
@@ -458,7 +469,7 @@ int is_universum_valid(Main *m){
 /**
  * @brief Checks whether an element is in the universum if so at which index.
  *
- * @param m represents the main structure.
+ * @param m points to main structure.
  * @param str represents the string that is to be seeked in the universum.
  * @return int value at which index the word was wound, in case it wasnt found returns an invalid value.
  */
@@ -471,7 +482,6 @@ int is_in_universum(Main *m, char *str)
             return j;
         }
     }
-    // not found
     return -1;
 }
 
@@ -480,7 +490,7 @@ int is_in_universum(Main *m, char *str)
  * Function adds elements to sets it also checks whether the set capacity is near its maximum capacity.
  * If the capacity is soon to be exceeded it  reallocates the size of the memory for the set.
  * @see allocate_or_resize
- * @param m represents the main structure.
+ * @param m points to main structure.
  * @param element_index represents the index in the universum at which the element we want to add is.
  * @param idx represents the index in the set at which we want to add the new element.
  */
@@ -508,7 +518,7 @@ int set_add_element(Main *m, int element_index, int idx)
 }
 /**
  * @brief Function for checking whether a set is valid. It checks for duplicity within the set.
- * @param m represents the main structure.
+ * @param m points to main structure.
  * @return True if it is a valid set, false if it isn't.
  */
 
@@ -528,7 +538,7 @@ int is_set(Main *m){
 
 /**
  * @brief Function for checking whether a relation is valid. It checks for duplicity of pairs within the relation.
- * @param m represents the main structure.
+ * @param m points to main structure.
  * @return True if it is a valid relation, false if it isn't.
  */
 int is_relation(Main *m){
@@ -548,7 +558,7 @@ int is_relation(Main *m){
  * @brief Function which converts elements to index numbers from the universum for ease of work within the programm. 
  *
  * @param file represents the file from which the data is to be retrieved from.
- * @param m represents the main structure.
+ * @param m points to main structure.
  * @see is_in_universum
  */
 int set_to_index(FILE *file, Main *m)
@@ -657,7 +667,6 @@ int relation_to_index(FILE *file, Main *m)
         if (character == '('){
             while (character != ' '){
                 character = getc(file);
-                //error handling
                 if(character == '(' || character == ')'){
                     fprintf(stderr,"ERROR: Wrong relation syntax\n");
                     return -1;
@@ -667,7 +676,6 @@ int relation_to_index(FILE *file, Main *m)
             }
             temp[index] = '\0';
             index = 0;
-            // load first word
             if ((is_in_universum(m, temp)) != -1){
                 relation_add_element(m, is_in_universum(m, temp), 1, idx);
             }
@@ -688,7 +696,6 @@ int relation_to_index(FILE *file, Main *m)
             }
             temp[index] = '\0';
             index = 0;
-            // load second word
             if ((is_in_universum(m, temp)) != -1){
                 relation_add_element(m, is_in_universum(m, temp), 0, idx);
             }
@@ -732,7 +739,7 @@ int set_find_index(Main *m, int line_index)
  * @brief Function finds at what index within the main relation structure the relation is located on.
  *
  * @param m represents the main structure.
- * @param line_index.
+ * @param line_index represents the index of the relation we want to check.
  * @return index value of the relation in the main relation structure
  */
 
@@ -750,45 +757,40 @@ int rel_find_index(Main *m, int line_index)
  * @brief Function checks whether a set is empty or not.
  *
  * @param m represents the main structure.
- * @param line_index represents the index of the set we want to t.
+ * @param line_index represents the index of the set we want to check.
  */
 void is_empty(Main *m, int line_index)
 {
     printf("%s\n", m->s->l[line_index].cardinality > 0 ? "false" : "true");
 }
-
-// Funkce printuje prunik dvou mnozin.
+/**
+ * @brief Function which prints out the intersection between set A and set B ---- A\B.
+ *
+ * @param m represents the main structure.
+ * @param set_line_index_a represents the line index of the set A.
+ * @param set_line_index_b represents the line index of the set B.
+ * @see print_set()
+ */
 void intersect(Main *m, int set_line_index_a, int set_line_index_b)
 {
     int i, h;
-    // int printed_elements = 0;
     int intersect_cardinality = 0;
     int *intersect = malloc(sizeof(int) * m->s->l[set_line_index_a].cardinality);
     for (i = 0; i < m->s->l[set_line_index_a].cardinality; ++i)
     {
-        // printf("%d", i);
         int a_index = m->s->l[set_line_index_a].set_items[i];
-        // printf("Tohle je a_index = %d\n", a_index);
-
-        // printf("%c", a_index);
         for (h = 0; h < m->s->l[set_line_index_b].cardinality; h++)
         {
 
             int b_index = m->s->l[set_line_index_b].set_items[h];
-            // printf("Tohle je b_index = %d\n", b_index);
             if (a_index == b_index)
             {
                 intersect[intersect_cardinality] = a_index;
-                // printf("%c", set_2[h]);
                 intersect_cardinality++;
                 continue;
             }
         }
     }
-    // for (printed_elements = 0; printed_elements < intersect_cardinality; printed_elements++)
-    // {
-    //     printf("%d\n", intersect[printed_elements]);
-    // }
     print_set(m, intersect_cardinality, intersect);
     free(intersect);
 }
@@ -811,7 +813,9 @@ void do_complement(Main *m, int line_index)
 }
 
 /**
- * @brief
+ * @brief  
+ * 
+ *
  *
  * @param m
  * @param set_index_a
@@ -822,7 +826,7 @@ void do_union(Main *m, int set_line_index_a, int set_line_index_b)
     bool in_union;
     int cardinality_a = m->s->l[set_line_index_a].cardinality;
     int cardinality_b = m->s->l[set_line_index_b].cardinality;
-    int *union_set = malloc((cardinality_a) + (cardinality_b) * sizeof(int)); // creates a temp array of a maximum union of the two arrays.
+    int *union_set = malloc((cardinality_a) + (cardinality_b) * sizeof(int));
     int i;
     int union_cardinality = 0;
 
@@ -1005,45 +1009,13 @@ void symmetric(Main *m, int line_index){
  */
 bool is_function(Main *m, int line_index_a)
 {
-    int i, j;
-    bool funkce, zero_found;
-    int cardinality = m->r->l[line_index_a].cardinality;
-    int *rel_domain = malloc(sizeof(int) * cardinality);
-    for (i = 0; i < cardinality; ++i)
-    {
-
-        int x_index = m->r->l[line_index_a].p[i].first;
-
-        for (j = 0; j < cardinality; j++)
-        {
-            funkce = false;
-            int x_index2 = rel_domain[j];
-            if (x_index == 0 && zero_found == false)
-            {
-                zero_found = true;
-                break;
-            }
-
-            if (x_index == x_index2 && zero_found == true)
-            {
-                funkce = true;
-                break;
-            }
-            if (x_index == x_index2)
-            {
-                funkce = true;
-                break;
-            }
+    int rel_cardinality = m->r->l[line_index_a].cardinality;
+    for (int i = 0; i < rel_cardinality; i++){
+        for (int j = i+1; j < rel_cardinality; j++){
+            if(m->r->l[line_index_a].p[i].first == m->r->l[line_index_a].p[j].first)
+                return false;
         }
-
-        if (funkce == true)
-        {
-            free(rel_domain);
-            return false;
-        }
-        rel_domain[i] = x_index;
     }
-    free(rel_domain);
     return true;
 }
 
@@ -1081,11 +1053,9 @@ void is_reflexive(Main *m, int line_index_a){
 
 void is_asymmetric(Main *m, int line_index){
 
-    // int line_index = m->r->l->line_index;
     int relation_cardinality = m->r->l[line_index].cardinality;
     bool asymetric = true;
     int x,y,x2,y2;
-    //R (a a) (c c) (c a) - true
     for(int i = 0; i < relation_cardinality; i++){
 
         for(int j = 0; j < relation_cardinality; j++){
@@ -1161,10 +1131,8 @@ void codomain(Main *m, int line_index_a){
 
     for (i = 0; i < cardinality; i++){
         shoda = false;
-        // printf("Neco se deje v prvnim cyklu\n");
         current_element = m->r->l[line_index_a].p[i].second;
         for (j = 0; j < index; j++){
-            // printf("Neco se deje v druhem cyklu\n");
 
             if (obor_hodnot[j] == current_element){
                 shoda = true;
@@ -1196,10 +1164,8 @@ void domain(Main *m, int line_index_a){
 
     for (i = 0; i < cardinality; i++){
         shoda = false;
-        // printf("Neco se deje v prvnim cyklu\n");
         current_element = m->r->l[line_index_a].p[i].first;
         for (j = 0; j < index; j++){
-            // printf("Neco se deje v druhem cyklu\n");
 
             if (rel_domain[j] == current_element){
                 shoda = true;
@@ -1241,7 +1207,6 @@ int injective(Main *m, int rel_line_index, int set_A_line_index, int set_B_line_
     if((set_A_cardinality == 0 || set_B_cardinality == 0) && rel_cardinality != 0){
         return false;
     }
-    //checks if element from set B is on first place in any pair
     for(int i = 0; i< rel_cardinality; i++){
         for( int j = 0; j<set_B_cardinality; j++){
             if(m->s->l[set_B_line_index].set_items[i] == m->r->l[rel_line_index].p[j].first){
@@ -1249,7 +1214,6 @@ int injective(Main *m, int rel_line_index, int set_A_line_index, int set_B_line_
             }
         }
     }
-    //checks if element from set A is on second place in any pair
     for(int i = 0; i< rel_cardinality; i++){
         for( int j = 0; j<set_A_cardinality; j++){
             if(m->s->l[set_A_line_index].set_items[i] == m->r->l[rel_line_index].p[j].second){
@@ -1257,7 +1221,6 @@ int injective(Main *m, int rel_line_index, int set_A_line_index, int set_B_line_
             }
         }
     }
-    //check if first places in pairs contain only A elements
     for(int i = 0; i < set_A_cardinality; i++){
         set_A_check = false;
         for (int j = 0; j < rel_cardinality; j++)
@@ -1334,7 +1297,6 @@ int surjective(Main *m, int rel_line_index, int set_A_line_index, int set_B_line
         return false;
     }
 
-    //checks if any second element does not contain A element
     for(int i = 0; i< rel_cardinality; i++){
         for( int j = 0; j<set_A_cardinality; j++){
             if(m->s->l[set_A_line_index].set_items[j] == m->r->l[rel_line_index].p[i].second){
@@ -1387,14 +1349,10 @@ int bijective(Main *m, int rel_line_index, int set_A_line_index, int set_B_line_
  * @return int 
  */
 int function_call(Main *m, int func_index, int par1, int par2, int par3){
-    // printf("p1:%d p2:%d p:3%d\n", par1,par2,par3);
     int rel_1 = rel_find_index(m, par1);
     int set_1 = set_find_index(m,par1);
     int set_2 = set_find_index(m,par2);
     int set_3 = set_find_index(m,par3);
-    // printf("f: %d r:%d s1:%d s2:%d s3:%d\n",func_index, rel_1, set_1, set_2, set_3);
-    // printf("func_indx >= 10: %d\n", func_index>=10);
-    // printf("(set_1 == -1 || set_2 == -1) : %d\n",(set_1 == -1 || set_2 == -1));
     if (func_index <= 2 && set_1 == -1){
         fprintf(stderr, "ERROR: wrong command argument!\n");
         return -1;
@@ -1506,23 +1464,17 @@ int function_call(Main *m, int func_index, int par1, int par2, int par3){
  * @return int 
  */
 int parse_num(FILE *file, int *savednum, int *character){
-    //C command 333333 333 333 333\n
-    // char character = getc(file);
     char *ptr;
     int index = 0;
     char number[5];
     strcpy(number,"");
-    // printf("number before:%s\n",number);
     while(*character != '\n' && *character != EOF){
             number[index++] = *character;
             *character = getc(file);
             //loads number
             if(*character == ' ' || *character == '\n' || *character == EOF){
                 number[index] = '\0';
-                // *savednum = atoi(number);
                 *savednum = strtol(number,&ptr,10);
-                // printf("ptr:%s\n",ptr);
-                // printf("savenum:%d\n",*savednum);
                 return 1;
             }
     }
@@ -1540,12 +1492,10 @@ int function_parser(FILE *file, Main *m){
 
     while (character != ' ' && character != '\n'){
         temp[index++] = character;
-        // printf("char: %c\n",character);
         character = fgetc(file);
         if (character == ' ')
         {
             temp[index] = '\0';
-            // printf("temp: %s\n",temp);
             func_num = find_function_keyword(temp,1);
             if (func_num == -1){
                 fprintf(stderr,"ERROR: Wrong function keyword\n");
@@ -1557,7 +1507,6 @@ int function_parser(FILE *file, Main *m){
                 return -1;
             }
     }
-    // TODO check if found function has exact number of parameters
 
     int num_of_parsed = 0;
     while(character != '\n' && character != EOF){
@@ -1579,11 +1528,10 @@ int function_parser(FILE *file, Main *m){
 /**
  * @brief Function which prints out the entire universum.
  *
- * @param m
+ * @param m points to struct main
  */
 void print_universum(Main *m)
 {
-    // U -> element -> mezera until last element -> \n
     printf("U");
     for (int i = 0; i < m->u->universum_cardinality; i++)
     {
@@ -1595,7 +1543,7 @@ void print_universum(Main *m)
     printf("\n");
 }
 
-void print_set_old(Main *m){
+void print_set_by_line_cardinality(Main *m){
 
     int uni_index = 0;
     int line_cardinality = m->s->line_cardinality;
@@ -1616,10 +1564,8 @@ void print_set_old(Main *m){
  *
  * @param m represents the main structure.
  * @param cardinality represents how many elements does the set have.
- * @param set represents the exact set which is supposed to be printed out.
+ * @param set points to set which is supposed to be printed out.
  */
-
-
 void print_set(Main *m, int cardinality, int *set){
     printf("S");
     for (int i = 0; i < cardinality; i++){
@@ -1634,11 +1580,10 @@ void print_set(Main *m, int cardinality, int *set){
 /**
  * @brief Function which prints out the relation
  *
- * @param m represents the main structure. 
+ * @param m points to main structure. 
  */
 
 void print_relation(Main *m){
-    // R ->( -> element1 -> mezera -> element2 ->) -> until last pair -> \n
     int rel_index = 0;
     int line_cardinality = m->r->line_cardinality;
     if(m->r->l[line_cardinality].cardinality == 0)
@@ -1660,10 +1605,10 @@ void print_relation(Main *m){
     printf("\n");
 }
 /**
- * @brief Function which adds a relation to the .
+ * @brief initializes relation in struct Main or reallocates memory for it if needed
  *
  * @param m represents the main structure.
- * @param line_index.
+ * @param line_index represents line at which relation can be found in file
  */
 
 int relation_line_add(Main *m, int line_index){
@@ -1689,6 +1634,13 @@ int relation_line_add(Main *m, int line_index){
     return true;
 }
 
+/**
+ * @brief Checks for line capacity and if needed reallocs the memory for number of lines.
+ * 
+ * @param m points to struct Main
+ * @param line_index line index at which set can be found in file
+ * @return int 
+ */
 int set_line_add(Main *m, int line_index){
     int line_cardinality = m->s->line_cardinality;
     if (m->s->line_cardinality + 1 > m->s->line_capacity){
@@ -1708,20 +1660,10 @@ int set_line_add(Main *m, int line_index){
     m->s->l[line_cardinality].cardinality = 0;
     return true;
 }
-/**
- * @brief
- *
- * @param m
- * @param element
- * @param idx
- * @return int
- */
-// **** FUNCTIONS ************************
 
 int main(int argc, char *argv[]){
     FILE *file;
     int return_value;
-    // printf("argc:%d argv[%d]: %s\n\n",argc,1,argv[1]);
     bool error = false;
     bool uni_loaded = false;
     bool set_found = false;
@@ -1740,7 +1682,6 @@ int main(int argc, char *argv[]){
         return -1;
     }
 
-    // init
     Main *m = main_ctor();
     if (m == NULL){
         fclose(file);
@@ -1753,19 +1694,14 @@ int main(int argc, char *argv[]){
             fprintf(stderr,"ERROR: too many lines!");
             error = 1;
             break;
-            // return -1;
         }
         return_value = type_check(file);
         if (return_value == 2){
             if(load_universum(file, m, line_index) == -1){
-                // main_dtor(m, 3);
-                // fclose(file);
-                // return EXIT_FAILURE;
                 error = 1;
                 break;
             }
             if(is_universum_valid(m) == -1){
-                // return EXIT_FAILURE;
                 error = 1;
                 break;
             }
@@ -1784,28 +1720,22 @@ int main(int argc, char *argv[]){
         if (return_value == 3){
             set_line_add(m, line_index);
             if(set_to_index(file, m) == -1){
-                // main_dtor(m, 3);
-                // fclose(file);
-                // return EXIT_FAILURE;
                 error = 1;
                 break;
             }
 
             if(is_set(m) == -1){
-                // main_dtor(m, 3);
-                // fclose(file);
-                // return EXIT_FAILURE;
                 error = 1;
                 break;
             }
-            print_set_old(m);
+            print_set_by_line_cardinality(m);
             set_found = true;
             (m->s->line_cardinality)++;
         }
-        if (return_value == 8){ //empty set
+        if (return_value == 8){
             set_line_add(m,line_index);
             set_add_element(m, -1, 0);
-            print_set_old(m);
+            print_set_by_line_cardinality(m);
             (m->s->line_cardinality)++;
             set_found = true;
         }
@@ -1842,9 +1772,6 @@ int main(int argc, char *argv[]){
         }
         if(return_value == -1){
             fprintf(stderr, "ERROR: Syntax error.\n");
-            // main_dtor(m,3);
-            // fclose(file);
-            // return EXIT_FAILURE;
             error = 1;
             break;
         }
@@ -1855,18 +1782,15 @@ int main(int argc, char *argv[]){
             error = 1;
             break;
         }
-    } 
-
+    }
     if(!set_found && !relation_found){
         fprintf(stderr,"ERROR: missing sets/relations");
         main_dtor(m, 3);
         fclose(file);
         return -1;
     }
-
     while(!error){
         return_value = type_check(file);
-        // printf("return_value in while 2. : %d\n", return_value);
         if (!return_value){
             break;
         }
