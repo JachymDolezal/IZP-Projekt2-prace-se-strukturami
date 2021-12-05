@@ -114,18 +114,17 @@ void *allocate_or_resize(void *ptr, unsigned int size)
  * @param line
  * @return Set_line*
  */
-Set_line *set_ctor(int line)
-{
+// void set_ctor(Main *m, int line)
+// {
 
-    Set_line *set = malloc(sizeof(Set_line));
-    if (set == NULL)
-        return NULL;
-    set->set_items = NULL;
-    set->capacity = 1;
-    set->cardinality = 0;
-    set->line_index = line;
-    return set;
-}
+//     if (set == NULL)
+//         return NULL;
+//     set->set_items = NULL;
+//     set->capacity = 1;
+//     set->cardinality = 0;
+//     set->line_index = line;
+//     return set;
+// }
 
 /**
  * @brief
@@ -176,13 +175,16 @@ int init_universum(Main *m)
  */
 int init_set(Main *m)
 {
-    m->s->line_capacity = 1;
-    m->s->line_cardinality = 0;
     m->s->l = malloc(sizeof(Set_line));
     if (m->s->l == NULL)
-    {
         return 0;
-    }
+    // m->s->l[0].set_items = NULL;
+    m->s->l[0].line_index = 0;
+    m->s->l[0].capacity = 0;
+    m->s->l[0].cardinality = 0;
+    m->s->line_capacity = 1;
+    m->s->line_cardinality = 0;
+    
 
     return 1;
 }
@@ -198,9 +200,12 @@ int init_relation(Main *m)
     m->r->l = malloc(sizeof(Relation_line));
     if (m->r->l == NULL)
         return 0;
+    // m->r->l[0].p = NULL;
+    m->r->l[0].line_index = 0;
+    m->r->l[0].capacity = 0;
+    m->r->l[0].cardinality = 0;
     m->r->line_cardinality = 0;
     m->r->line_capacity = 1;
-
     return 1;
 }
 
@@ -212,18 +217,26 @@ int init_relation(Main *m)
  */
 void main_dtor(Main *m, int depth)
 {
+    if(m->r->l->p != NULL)
     if (depth == 3)
     {
 
         // depth 3
-        for (int i = m->s->line_cardinality - 1; i >= 0; i--)
+        if(m->r->l[0].p != NULL){
+            free(m->r->l[0].p);
+        }
+        if(m->s->l[0].set_items != NULL){
+            free(m->s->l[0].set_items);
+        }
+        for (int i = m->s->line_cardinality -1; i > 0; i--)
         {
             free(m->s->l[i].set_items);
         }
-        for (int j = m->r->line_cardinality - 1; j >= 0; j--)
+        for (int j = m->r->line_cardinality -1; j > 0; j--)
         {
             free(m->r->l[j].p);
         }
+    
     }
     if (depth >= 2)
     {
@@ -263,9 +276,13 @@ Main *main_ctor()
         return NULL;
     }
     if (init_universum(m) && init_set(m) && init_relation(m))
-    {
-        m->s->l->set_items = allocate_or_resize(m->s->l->set_items, sizeof(Set_line));
-        m->r->l->p = allocate_or_resize(m->r->l->p, sizeof(Pairs));
+    {   
+        // m->s->l->set_items = NULL;
+        // m->r->l->p = NULL;
+        m->s->l->set_items  = malloc(sizeof(Set_line));
+        m->r->l->p = malloc(sizeof(Pairs));
+        // m->s->l->set_items = allocate_or_resize(m->s->l->set_items, sizeof(Set_line));
+        // m->r->l->p = allocate_or_resize(m->r->l->p, sizeof(Pairs));
         if (m->s->l->set_items == NULL || m->r->l->p == NULL)
         {
             main_dtor(m, 3);
@@ -510,11 +527,7 @@ int is_in_universum(Main *m, char *str)
 int set_add_element(Main *m, int element_index, int idx)
 {
     int line_cardinality = m->s->line_cardinality;
-    // printf("set_add_element line_cardinality: %d\n", line_cardinality);
-    // printf("m->s->l[line_cardinality].cardinality : %d\n", m->s->l[line_cardinality].cardinality);
-    // printf("m->s->l[%d].cardinality: %d\n",line_cardinality, m->s->l[line_cardinality].cardinality);
-    if (m->s->l[line_cardinality].cardinality + 1 > m->s->l[line_cardinality].capacity)
-    {
+    if (m->s->l[line_cardinality].cardinality + 1 > m->s->l[line_cardinality].capacity){
         m->s->l[line_cardinality].capacity = m->s->l[line_cardinality].capacity * 2 + 1;
         m->s->l[line_cardinality].set_items = allocate_or_resize(m->s->l[line_cardinality].set_items, m->s->l[line_cardinality].capacity * sizeof(int));
         if ((m->s->l[line_cardinality].set_items) == NULL)
@@ -523,19 +536,18 @@ int set_add_element(Main *m, int element_index, int idx)
             return false;
         }
     }
-    // printf("m->s->l[%d].set_items ptr: %p\n", line_cardinality, m->s->l[line_cardinality].set_items);
     if (element_index == -1){
         m->s->l[line_cardinality].cardinality = 0;
     }
     else{
         m->s->l[line_cardinality].set_items[idx] = element_index;
+
         (m->s->l[line_cardinality].cardinality)++;
     }
     return -1;
 }
 
 int is_set(Main *m){
-    //S a a c d
     int line_cardinality = m->s->line_cardinality;
     int set_cardinality = m->s->l[line_cardinality].cardinality;
     for(int i = 0; i < set_cardinality; i++){
@@ -578,7 +590,6 @@ int is_relation(Main *m){
  */
 int set_to_index(FILE *file, Main *m)
 {
-
     char character = getc(file);
     char element[31];
     int element_len = 0;
@@ -1035,47 +1046,6 @@ void is_reflexive(Main *m, int line_index_a){
     }
 }
 
-//* Funkce vraci zda-li je relace asymetricka.
-// bool is_asymmetric(Main *m, int line_index_a)
-// {
-//     int i, j;
-//     bool asymmetricity_x;
-//     int cardinality = m->r->l[line_index_a].cardinality;
-//     for (i = 0; i < cardinality; i++)
-//     {
-//         int x_index = m->r->l[line_index_a].p[i].first;
-//         int y_index = m->r->l[line_index_a].p[i].second;
-
-//         // printf("%d toto je X index\n", x_index);
-//         for (j = 0; j < cardinality; j++)
-//         {
-//             asymmetricity_x = false;
-//             int x_index2 = m->r->l[line_index_a].p[j].second;
-//             int y_index2 = m->r->l[line_index_a].p[j].first;
-
-//             // printf("%d toto je Y index\n", y_index);
-//             if (x_index == x_index2 && y_index == y_index2)
-//             {
-//                 // printf("shoda\n");
-//                 asymmetricity_x = true;
-//                 break;
-//             }
-//             if (j < cardinality && (x_index != x_index2 || y_index != y_index2))
-//             {
-//                 continue;
-//             }
-//         }
-//         if (asymmetricity_x == true)
-//         {
-//             printf("false\n");
-//             return false;
-//         }
-//     }
-
-//     printf("true\n");
-//     return true;
-// }
-
 void is_asymmetric(Main *m, int line_index){
 
     // int line_index = m->r->l->line_index;
@@ -1201,25 +1171,79 @@ void domain(Main *m, int line_index_a){
 
 
 int injective(Main *m, int rel_line_index, int set_A_line_index, int set_B_line_index){
+
     int rel_cardinality = m->r->l[rel_line_index].cardinality;
-    (void) set_A_line_index;
-    //  = m->s->l[set_A_line_index].cardinality;
-    (void) set_B_line_index;
-    // = m->s->l[set_B_line_index].cardinality;
-    int index = 0;
-    int match = 0;
-    for(index = 0 ; index < rel_cardinality; index++){
-        //checks if first is in set A;
-        //checks if second is in set B;
-        //checks if second is in any other pair;
-        for(int j = index; j<rel_cardinality; j++){
-            if(m->r->l[rel_line_index].p[index].second == m->r->l[rel_line_index].p[j].second){
-                match++;
-            }
-            if(match < 2){
+    int set_A_cardinality = m->s->l[set_A_line_index].cardinality;
+    int set_B_cardinality = m->s->l[set_B_line_index].cardinality;
+    bool set_A_check = true;
+    int count = 0;
+
+    if((set_A_cardinality == 0 || set_B_cardinality == 0) && rel_cardinality != 0){
+        printf("false\n");
+        return false;
+    }
+
+    for(int i = 0; i< rel_cardinality; i++){
+        for( int j = 0; j<set_B_cardinality; j++){
+            if(m->s->l[set_B_line_index].set_items[i] == m->r->l[rel_line_index].p[j].first){
                 printf("false\n");
                 return false;
             }
+        }
+    }
+    for(int i = 0; i< rel_cardinality; i++){
+        for( int j = 0; j<set_A_cardinality; j++){
+            if(m->s->l[set_A_line_index].set_items[i] == m->r->l[rel_line_index].p[j].second){
+                printf("false\n");
+                return false;
+            }
+        }
+    }
+    for(int i = 0; i < set_A_cardinality; i++){
+        set_A_check = false;
+        for (int j = 0; j < rel_cardinality; j++)
+            if(m->s->l[set_A_line_index].set_items[i] == m->r->l[rel_line_index].p[j].first){
+                set_A_check = true;
+            }
+        if(!set_A_check){
+            printf("false\n");
+            return false;
+        }
+
+    }
+    for(int i = 0; i < set_B_cardinality; i++){
+        count = 0;
+        for(int j = 0; j < rel_cardinality; j++){
+            if(m->s->l[set_B_line_index].set_items[i] == m->r->l[rel_line_index].p[j].second)
+                count++;
+        }
+        if (count > 1){
+            printf("false\n");
+            return false;
+        }
+
+    }
+    printf("true\n");
+    return true;
+}
+
+
+int surjective(Main *m, int rel_line_index, int set_A_line_index, int set_B_line_index){
+    int rel_cardinality = m->r->l[rel_line_index].cardinality;
+    int set_B_cardinality = m->s->l[set_B_line_index].cardinality;
+    int set_A_cardinality = m->s->l[set_A_line_index].cardinality;
+    bool found_B_element = true;
+
+
+    for (int i = 0; i < set_B_cardinality; i++){
+        found_B_element = false;
+        for(int j = 0; i < rel_cardinality; j++){
+            if (m->r->l[rel_line_index].p[j].second == m->s->l[set_B_line_index].set_items[i])
+                found_B_element = true;
+        }
+        if(!found_B_element){
+            printf("false\n");
+            return false;
         }
     }
     printf("true\n");
@@ -1228,6 +1252,8 @@ int injective(Main *m, int rel_line_index, int set_A_line_index, int set_B_line_
 
 
 // int surjective(Main *m, int rel_line_index, int set_A_line_index, int set_B_line_index){
+
+
 
 //     return true;
 // }
@@ -1272,8 +1298,6 @@ int function_call(Main *m, int func_index, int par1, int par2, int par3){
         fprintf(stderr, "ERROR: wrong line argument!\n");
         return -1;
     }
-    (void) set_3;
-
     switch(func_index) {
         case 0 :
             if (set_2 || set_3 != 0)
@@ -1298,8 +1322,6 @@ int function_call(Main *m, int func_index, int par1, int par2, int par3){
             is_asymmetric(m,rel_1);
             break;
         case 6 :
-            // transitivity(m,rel_1);
-            // transitivity(m,rel_1);
             transitive(m,rel_1);
             break;
         case 7 :
@@ -1333,16 +1355,16 @@ int function_call(Main *m, int func_index, int par1, int par2, int par3){
             equals(m,set_1,set_2);
             break;
         case 16 :
-            printf("injective params: %d %d %d",rel_1,set_2,set_3);
+            injective(m, rel_1, set_2, set_3);
             break;
         case 17 :
-            printf("surjective\n");
+            surjective(m,rel_1,set_2,set_3);
             break;
         case 18 :
             printf("bijective\n");
             break;
         default :
-            printf("bad func name");
+            printf("bad func name\n");
     }
     return true;
 }
@@ -1416,7 +1438,7 @@ int function_parser(FILE *file, Main *m){
         num_of_parsed +=parse_num(file,&secondnum,&character);
         num_of_parsed +=parse_num(file,&thirdnum,&character);
     }
-    if((func_num < 9 && num_of_parsed != 1) || (func_num > 9 && func_num <= 15 && num_of_parsed != 2) || (func_num > 15 && num_of_parsed != 3)){
+    if((func_num <= 9 && num_of_parsed != 1) || (func_num > 9 && func_num <= 15 && num_of_parsed != 2) || (func_num > 15 && num_of_parsed != 3)){
         fprintf(stderr,"ERROR: Function has a wrong number of parameters\n");
         return -1;
     }
@@ -1521,15 +1543,19 @@ int relation_line_add(Main *m, int line_index){
             return -1;
         }
     }
+    if(line_cardinality == 0){
+        free(m->r->l[line_cardinality].p);
+    }
     m->r->l[line_cardinality].line_index = line_index;
-    // set_ctor(line_index);
+    m->r->l[line_cardinality].p = NULL;
+    m->r->l[line_cardinality].capacity = 0;
+    m->r->l[line_cardinality].cardinality = 0;
 
     return true;
 }
 
 int set_line_add(Main *m, int line_index){
     int line_cardinality = m->s->line_cardinality;
-
     if (m->s->line_cardinality + 1 > m->s->line_capacity){
         m->s->line_capacity = m->s->line_capacity * 2 + 1;
         m->s->l = allocate_or_resize(m->s->l, m->s->line_capacity * sizeof(Set_line));
@@ -1538,9 +1564,13 @@ int set_line_add(Main *m, int line_index){
             return -1;
         }
     }
+    if(line_cardinality == 0){
+        free(m->s->l[line_cardinality].set_items);
+    }
+    m->s->l[line_cardinality].set_items = NULL;
     m->s->l[line_cardinality].line_index = line_index;
-    // set_ctor(line_index);
-
+    m->s->l[line_cardinality].capacity = 0;
+    m->s->l[line_cardinality].cardinality = 0;
     return true;
 }
 /**
@@ -1559,8 +1589,8 @@ int main(int argc, char *argv[]){
     // printf("argc:%d argv[%d]: %s\n\n",argc,1,argv[1]);
     bool error = false;
     bool uni_loaded = false;
-    if (argc > 2){
-        fprintf(stderr, "Only one input is allowed");
+    if (argc > 2 || argc == 1){
+        fprintf(stderr, "ERROR: Only one input is allowed\n");
         return EXIT_FAILURE;
     }
 
@@ -1569,8 +1599,7 @@ int main(int argc, char *argv[]){
     file = fopen(filename, "r");
 
     if (file == NULL){
-        fprintf(stderr, "This file name is invalid");
-        fclose(file);
+        fprintf(stderr, "ERROR: This file name is invalid\n");
         return -1;
     }
 
@@ -1578,11 +1607,12 @@ int main(int argc, char *argv[]){
     Main *m = main_ctor();
     if (m == NULL){
         fclose(file);
-        return 1;
+        main_dtor(m,3);
+        return EXIT_FAILURE;
     }
 
     while (1){
-        if(line_index > 999){
+        if(line_index > 1000){
             fprintf(stderr,"ERROR: too many lines!");
             error = 1;
             break;
@@ -1623,6 +1653,7 @@ int main(int argc, char *argv[]){
                 error = 1;
                 break;
             }
+
             if(is_set(m) == -1){
                 // main_dtor(m, 3);
                 // fclose(file);
@@ -1695,6 +1726,7 @@ int main(int argc, char *argv[]){
     }
     while(!error){
         return_value = type_check(file);
+        // printf("return_value in while 2. : %d\n", return_value);
         if (!return_value){
             break;
         }
