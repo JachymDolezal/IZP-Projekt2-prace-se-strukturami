@@ -1,8 +1,9 @@
-/*
-Authors:
-@FrodoCZE login: xdolez0c
-@Midiros login: xlegne00
-@youruncle1 login: xpolia05
+/** @file newsetcal.c
+* @brief Application for working with sets and relations.
+* Authors:
+* @FrodoCZE login: xdolez0c
+* @Midiros login: xlegne00
+* @youruncle1 login: xpolia05
 
 Last updated 3.12.2021.
 */
@@ -17,15 +18,6 @@ Last updated 3.12.2021.
 #define FALSE 0
 #define NUM_OF_KEYWORDS 21
 #define KEYWORD_MAX_LEN 14
-
-/**
- * @brief
- *
- * @param m
- * @param element
- * @param idx
- * @return int
- */
 
 typedef struct
 {
@@ -106,46 +98,6 @@ void *allocate_or_resize(void *ptr, unsigned int size)
     }
 
     return new_arr;
-}
-
-/**
- * @brief Set the ctor object
- *
- * @param line
- * @return Set_line*
- */
-// void set_ctor(Main *m, int line)
-// {
-
-//     if (set == NULL)
-//         return NULL;
-//     set->set_items = NULL;
-//     set->capacity = 1;
-//     set->cardinality = 0;
-//     set->line_index = line;
-//     return set;
-// }
-
-/**
- * @brief
- *
- * @param line
- * @return Relation_line*
- */
-Relation_line *relation_ctor(int line)
-{
-
-    Relation_line *rel = malloc(sizeof(Relation_line));
-    if (rel == NULL)
-    {
-        return NULL;
-    }
-    rel->p = NULL;
-    rel->capacity = 1;
-    rel->cardinality = 0;
-    rel->line_index = line;
-
-    return rel;
 }
 
 /**
@@ -257,7 +209,7 @@ void main_dtor(Main *m, int depth)
 }
 
 /**
- * @brief
+ * @brief Function which constructs a main structure.
  *
  * @return Main*
  */
@@ -298,10 +250,10 @@ Main *main_ctor()
 }
 
 /**
- * @brief
+ * @brief Function which checks whether the input is valid or if it is a empty universum/set/relation.
  *
  * @param file
- * @return int
+ * @return int value 
  */
 int type_check(FILE *file){
     char character = getc(file);
@@ -348,12 +300,13 @@ int type_check(FILE *file){
 }
 
 /**
- * @brief
+ * @brief Function which adds an element to the universum.
+ * Also checks whether the universum cardinality hasnt exceeded the capacity, if yes it calls for a resizing of the universum.
  *
- * @param m
- * @param element
- * @param idx
- * @return int
+ * @param m represents the main structure.
+ * @param element represents which element is to be added.
+ * @param idx 
+ * @return true if the element was a, false if not.
  */
 int uni_add_element(Main *m, char *element, int idx)
 {
@@ -375,6 +328,13 @@ int uni_add_element(Main *m, char *element, int idx)
     return TRUE;
 }
 
+/**
+ * @brief Function which checks what command is supposed to be used.
+ *
+ * @param str the string which represents the name of command that the user entered.
+ * @param find_function         .
+ * @return index value of the command.
+ */
 int find_function_keyword(char *str,bool find_function){
 
     int keyword_count = 21;
@@ -397,7 +357,7 @@ int find_function_keyword(char *str,bool find_function){
     {"subseteq"},
     {"subset"},
     {"equals"},
-    // 3 inputs 16-18
+    // 3 inputs 16-19
     {"injective"},
     {"surjective"},
     {"bijective"},
@@ -405,7 +365,7 @@ int find_function_keyword(char *str,bool find_function){
     {"false"},
     };
     if(find_function)
-        keyword_count = 18;
+        keyword_count = 19;
 
     for (int i = 0; i < keyword_count; i++){
         if (!(strcmp(str, functions[i])))
@@ -496,12 +456,11 @@ int is_universum_valid(Main *m){
 }
 
 /**
- * @brief
+ * @brief Checks whether an element is in the universum if so at which index.
  *
- * @param m
- * @param element
- * @param idx
- * @return int
+ * @param m represents the main structure.
+ * @param str represents the string that is to be seeked in the universum.
+ * @return int value at which index the word was wound, in case it wasnt found returns an invalid value.
  */
 int is_in_universum(Main *m, char *str)
 {
@@ -517,12 +476,13 @@ int is_in_universum(Main *m, char *str)
 }
 
 /**
- * @brief
- *
- * @param m
- * @param element
- * @param idx
- * @return int
+ * @brief Function for adding elements to sets.
+ * Function adds elements to sets it also checks whether the set capacity is near its maximum capacity.
+ * If the capacity is soon to be exceeded it  reallocates the size of the memory for the set.
+ * @see allocate_or_resize
+ * @param m represents the main structure.
+ * @param element_index represents the index in the universum at which the element we want to add is.
+ * @param idx represents the index in the set at which we want to add the new element.
  */
 int set_add_element(Main *m, int element_index, int idx)
 {
@@ -546,6 +506,11 @@ int set_add_element(Main *m, int element_index, int idx)
     }
     return -1;
 }
+/**
+ * @brief Function for checking whether a set is valid. It checks for duplicity within the set.
+ * @param m represents the main structure.
+ * @return True if it is a valid set, false if it isn't.
+ */
 
 int is_set(Main *m){
     int line_cardinality = m->s->line_cardinality;
@@ -562,10 +527,9 @@ int is_set(Main *m){
 }
 
 /**
- * @brief 
- * 
- * @param m 
- * @return int 
+ * @brief Function for checking whether a relation is valid. It checks for duplicity of pairs within the relation.
+ * @param m represents the main structure.
+ * @return True if it is a valid relation, false if it isn't.
  */
 int is_relation(Main *m){
     int line_cardinality = m->r->line_cardinality;
@@ -581,12 +545,11 @@ int is_relation(Main *m){
 }
 
 /**
- * @brief
+ * @brief Function which converts elements to index numbers from the universum for ease of work within the programm. 
  *
- * @param m
- * @param element
- * @param idx
- * @return int
+ * @param file represents the file from which the data is to be retrieved from.
+ * @param m represents the main structure.
+ * @see is_in_universum
  */
 int set_to_index(FILE *file, Main *m)
 {
@@ -630,12 +593,14 @@ int set_to_index(FILE *file, Main *m)
 }
 
 /**
- * @brief
- *
- * @param m
- * @param element
- * @param idx
- * @return int
+ * @brief Function for adding elements to relation.
+ * Function adds elements to relation it also checks whether the relation capacity is near its maximum capacity.
+ * If the capacity is soon to be exceeded it reallocates the size of the memory for the relation.
+ * @see allocate_or_resize
+ * @param m represents the main structure.
+ * @param element_index represents the index in the universum at which the element we want to add is.
+ * @param isfirst If the value is true the element is added to first element of the pair.If the value is false the element is added to the second element of the pair.
+ * @param idx represents the index of the pair in the relation at which we want to add the new element.
  */
 int relation_add_element(Main *m, int element_index, bool isfirst, int idx)
 {
@@ -665,12 +630,12 @@ int relation_add_element(Main *m, int element_index, bool isfirst, int idx)
 }
 
 /**
- * @brief
+ * @brief Function which converts elements to index numbers from the universum for ease of work within the programm.
  *
- * @param m
- * @param element
- * @param idx
- * @return int
+ * @param file represents the file from which the data is to be retrieved from.
+ * @param m represents the main structure.
+ * @see is_in_universum
+ * @see relation_add_element
  */
 int relation_to_index(FILE *file, Main *m)
 {
@@ -747,7 +712,13 @@ int relation_to_index(FILE *file, Main *m)
 
     return true;
 }
-
+/**
+ * @brief Function finds at what index within the main set structure the set is located on.
+ *
+ * @param m represents the main structure.
+ * @param line_index.
+ * @return index value of the set in the main set structure
+ */
 int set_find_index(Main *m, int line_index)
 {
     for (int i = 0; i < m->s->line_cardinality; i++)
@@ -757,6 +728,13 @@ int set_find_index(Main *m, int line_index)
     }
     return -1;
 }
+/**
+ * @brief Function finds at what index within the main relation structure the relation is located on.
+ *
+ * @param m represents the main structure.
+ * @param line_index.
+ * @return index value of the relation in the main relation structure
+ */
 
 int rel_find_index(Main *m, int line_index)
 {
@@ -768,6 +746,12 @@ int rel_find_index(Main *m, int line_index)
     return -1;
 }
 
+/**
+ * @brief Function checks whether a set is empty or not.
+ *
+ * @param m represents the main structure.
+ * @param line_index represents the index of the set we want to t.
+ */
 void is_empty(Main *m, int line_index)
 {
     printf("%s\n", m->s->l[line_index].cardinality > 0 ? "false" : "true");
@@ -867,6 +851,14 @@ void do_union(Main *m, int set_line_index_a, int set_line_index_b)
     print_set(m, union_cardinality, union_set); // outputs the result
     free(union_set);
 }
+/**
+ * @brief Function which prints out the difference between set A and set B ---- A\B.
+ *
+ * @param m represents the main structure.
+ * @param line_index_a represents the line index of the set A.
+ * @param line_index_b represents the line index of the set B.
+ * @see print_set()
+ */
 
 void minus(Main *m, int line_index_a, int line_index_b)
 {
@@ -897,6 +889,13 @@ void minus(Main *m, int line_index_a, int line_index_b)
     free(difference_set);
 }
 
+/**
+ * @brief Function which compares two sets and returns whether set A is a subset of set B.
+ *
+ * @param m represents the main structure.
+ * @param line_index_a represents the line index of the set A.
+ * @param line_index_b represents the line index of the set B.
+ */
 bool subseteq(Main *m, int line_index_a, int line_index_b)
 {
     int cardinality_a = m->s->l[line_index_a].cardinality;
@@ -921,6 +920,15 @@ bool subseteq(Main *m, int line_index_a, int line_index_b)
     return true;
 }
 
+/**
+ * @brief Function which compares two sets and returns whether set A is a proper subset of set B.
+ *
+ * @param m represents the main structure.
+ * @param line_index_a represents the line index of the set A.
+ * @param line_index_b represents the line index of the set B.
+ * @see subseteq()
+ */
+ 
 int subset(Main *m, int line_index_a, int line_index_b)
 {
 
@@ -936,6 +944,13 @@ int subset(Main *m, int line_index_a, int line_index_b)
     printf("false\n");
     return false;
 }
+/**
+ * @brief Function which compares two sets and returns whether they are equal or not..
+ *
+ * @param m represents the main structure.
+ * @param line_index_a represents the line index of the set A.
+ * @param line_index_b represents the line index of the set B.
+ */
 
 void equals(Main *m, int line_index_a, int line_index_b)
 {
@@ -951,10 +966,10 @@ void equals(Main *m, int line_index_a, int line_index_b)
 //*************************************************************//
 
 /**
- * @brief
+ * @brief Function which checks whether a relation is symmetric. Returns a True or False value.
  *
- * @param m
- * @param line_index
+ * @param m represents the main structure
+ * @param line_index represents the line index of the relation being worked on.
  */
 void symmetric(Main *m, int line_index){
     int rel_cardinality = m->r->l[line_index].cardinality;
@@ -982,13 +997,18 @@ void symmetric(Main *m, int line_index){
     }
 }
 
-// * Funkce vraci zdali je relace funkci
+/**
+ * @brief Function which checks whether a relation is a function. Returns a True or False value.
+ *
+ * @param m represents the main structure
+ * @param line_index represents the line index of the relation being worked on.
+ */
 bool is_function(Main *m, int line_index_a)
 {
     int i, j;
     bool funkce, zero_found;
     int cardinality = m->r->l[line_index_a].cardinality;
-    int *definicni_obor = malloc(sizeof(int) * cardinality);
+    int *rel_domain = malloc(sizeof(int) * cardinality);
     for (i = 0; i < cardinality; ++i)
     {
 
@@ -997,7 +1017,7 @@ bool is_function(Main *m, int line_index_a)
         for (j = 0; j < cardinality; j++)
         {
             funkce = false;
-            int x_index2 = definicni_obor[j];
+            int x_index2 = rel_domain[j];
             if (x_index == 0 && zero_found == false)
             {
                 zero_found = true;
@@ -1018,15 +1038,21 @@ bool is_function(Main *m, int line_index_a)
 
         if (funkce == true)
         {
-            printf("false\n");
-
+            free(rel_domain);
             return false;
         }
-        definicni_obor[i] = x_index;
+        rel_domain[i] = x_index;
     }
-    printf("true\n");
+    free(rel_domain);
     return true;
 }
+
+/**
+ * @brief Function which checks whether a relation is reflexive. Returns a True or False value.
+ *
+ * @param m represents the main structure
+ * @param line_index represents the line index of the relation being worked on.
+ */
 
 void is_reflexive(Main *m, int line_index_a){
     int universum_cardinality = m->u->universum_cardinality;
@@ -1045,6 +1071,13 @@ void is_reflexive(Main *m, int line_index_a){
         printf("true\n");
     }
 }
+
+/**
+ * @brief Function which checks whether a relation is asymmetric. Returns a True or False value.
+ *
+ * @param m represents the main structure
+ * @param line_index represents the line index of the relation being worked on.
+ */
 
 void is_asymmetric(Main *m, int line_index){
 
@@ -1075,6 +1108,12 @@ void is_asymmetric(Main *m, int line_index){
         printf("true\n");
     }
 }
+/**
+ * @brief Function which checks whether a relation is a transitive. Returns a True or False value.
+ *
+ * @param m represents the main structure
+ * @param line_index represents the line index of the relation being worked on.
+ */
 
 bool transitive(Main *m, int line_index_a){
     int i,j,k;
@@ -1106,7 +1145,12 @@ bool transitive(Main *m, int line_index_a){
     printf("true\n");
     return true;
 }
-
+/**
+ * @brief Function which which prints out the range/codomain of a relation.
+ *
+ * @param m represents the main structure
+ * @param line_index represents the line index of the relation being worked on.
+ */
 void codomain(Main *m, int line_index_a){
     int i, j;
     int current_element;
@@ -1136,14 +1180,18 @@ void codomain(Main *m, int line_index_a){
     print_set(m , index, obor_hodnot);
     free(obor_hodnot);
 }
-// * Tiskne definicni obor.
-
+/**
+ * @brief Function which which prints out the domain of a relation.
+ *
+ * @param m represents the main structure
+ * @param line_index represents the line index of the relation being worked on.
+ */
 void domain(Main *m, int line_index_a){
     int i, j;
     int current_element;
     int index = 0;
     int cardinality = m->r->l[line_index_a].cardinality;
-    int *definicni_obor = malloc(sizeof(int) * cardinality);
+    int *rel_domain = malloc(sizeof(int) * cardinality);
     bool shoda;
 
     for (i = 0; i < cardinality; i++){
@@ -1153,23 +1201,30 @@ void domain(Main *m, int line_index_a){
         for (j = 0; j < index; j++){
             // printf("Neco se deje v druhem cyklu\n");
 
-            if (definicni_obor[j] == current_element){
+            if (rel_domain[j] == current_element){
                 shoda = true;
                 break;
             }
         }
         if (shoda == false){
-            definicni_obor[index] = current_element;
+            rel_domain[index] = current_element;
             index++;
             continue;
         }
     }
-    print_set(m, index, definicni_obor);
+    print_set(m, index, rel_domain);
 
-    free(definicni_obor);
+    free(rel_domain);
 }
-
-
+/**
+ * @brief Function which checks relation.
+ *
+ * @param m represents the main structure
+ * @param rel_line_index represents the line index of the relation being worked on.
+ * @param set_A_line_index
+ * @param set_B_line_index
+ *
+ */
 int injective(Main *m, int rel_line_index, int set_A_line_index, int set_B_line_index){
 
     int rel_cardinality = m->r->l[rel_line_index].cardinality;
@@ -1178,27 +1233,31 @@ int injective(Main *m, int rel_line_index, int set_A_line_index, int set_B_line_
     bool set_A_check = true;
     int count = 0;
 
-    if((set_A_cardinality == 0 || set_B_cardinality == 0) && rel_cardinality != 0){
-        printf("false\n");
+    if(!is_function(m, rel_line_index)){
         return false;
     }
 
+
+    if((set_A_cardinality == 0 || set_B_cardinality == 0) && rel_cardinality != 0){
+        return false;
+    }
+    //checks if element from set B is on first place in any pair
     for(int i = 0; i< rel_cardinality; i++){
         for( int j = 0; j<set_B_cardinality; j++){
             if(m->s->l[set_B_line_index].set_items[i] == m->r->l[rel_line_index].p[j].first){
-                printf("false\n");
                 return false;
             }
         }
     }
+    //checks if element from set A is on second place in any pair
     for(int i = 0; i< rel_cardinality; i++){
         for( int j = 0; j<set_A_cardinality; j++){
             if(m->s->l[set_A_line_index].set_items[i] == m->r->l[rel_line_index].p[j].second){
-                printf("false\n");
                 return false;
             }
         }
     }
+    //check if first places in pairs contain only A elements
     for(int i = 0; i < set_A_cardinality; i++){
         set_A_check = false;
         for (int j = 0; j < rel_cardinality; j++)
@@ -1206,7 +1265,6 @@ int injective(Main *m, int rel_line_index, int set_A_line_index, int set_B_line_
                 set_A_check = true;
             }
         if(!set_A_check){
-            printf("false\n");
             return false;
         }
 
@@ -1218,60 +1276,115 @@ int injective(Main *m, int rel_line_index, int set_A_line_index, int set_B_line_
                 count++;
         }
         if (count > 1){
-            printf("false\n");
             return false;
         }
 
     }
-    printf("true\n");
     return true;
 }
 
-
+/**
+ * @brief Function which checks relation.
+ *
+ * @param m represents the main structure
+ * @param rel_line_index represents the line index of the relation being worked on.
+ * @param set_A_line_index
+ * @param set_B_line_index
+ *
+ */
+/*
+U a b c x y z w 1
+S a b c 2 <= A
+S x y z 3 <= B
+S x y 4
+S x y z w 5
+S 6
+R (x y) (a x) (b z) (c y) 7
+R (a x) (b a) (c z) 8 
+R (a x) (b y) 9 
+R (a x) (a y) (b y) (c z) 10
+R 11
+R (a x) (b y) (c x) 12
+R (a x) (b y) (c z) 13 <=
+C surjective 7 2 3 false f
+C surjective 8 2 3 false f
+C surjective 9 2 3 false f
+C surjective 10 2 3 false t
+C surjective 11 2 3 false f
+C surjective 11 6 6 true t
+C surjective 13 2 6 false f
+C surjective 13 6 3 false f
+C surjective 13 6 6 false t
+C surjective 12 2 3 fales f
+C surjective 12 2 4 true f
+C surjective 13 2 3 true f
+C surjective 13 2 5 false f
+*/
 int surjective(Main *m, int rel_line_index, int set_A_line_index, int set_B_line_index){
     int rel_cardinality = m->r->l[rel_line_index].cardinality;
     int set_B_cardinality = m->s->l[set_B_line_index].cardinality;
     int set_A_cardinality = m->s->l[set_A_line_index].cardinality;
     bool found_B_element = true;
 
+    if(!is_function(m, rel_line_index)){
+        return false;
+    }
 
-    for (int i = 0; i < set_B_cardinality; i++){
+    if((set_A_cardinality == 0 || set_B_cardinality == 0) && rel_cardinality != 0){
+        return false;
+    }
+
+    //checks if any second element does not contain A element
+    for(int i = 0; i< rel_cardinality; i++){
+        for( int j = 0; j<set_A_cardinality; j++){
+            if(m->s->l[set_A_line_index].set_items[j] == m->r->l[rel_line_index].p[i].second){
+                return false;
+            }
+        }
+    }
+    // first element in pair does not contain any B elements.
+    for(int i = 0; i< rel_cardinality; i++){
+        for( int j = 0; j<set_B_cardinality; j++){
+            if(m->s->l[set_B_line_index].set_items[j] == m->r->l[rel_line_index].p[i].first){
+                return false;
+            }
+        }
+    }
+
+    // checks if all second elements are in B
+    for(int i = 0; i < set_B_cardinality; i++){
         found_B_element = false;
-        for(int j = 0; i < rel_cardinality; j++){
-            if (m->r->l[rel_line_index].p[j].second == m->s->l[set_B_line_index].set_items[i])
+        for(int j = 0; j < rel_cardinality; j++){
+            if(m->s->l[set_B_line_index].set_items[i] == m->r->l[rel_line_index].p[j].second){
                 found_B_element = true;
+            }
         }
         if(!found_B_element){
-            printf("false\n");
             return false;
         }
     }
-    printf("true\n");
     return true;
 }
 
+int bijective(Main *m, int rel_line_index, int set_A_line_index, int set_B_line_index){
+    if(injective(m,rel_line_index,set_A_line_index,set_B_line_index) && surjective(m,rel_line_index,set_A_line_index,set_B_line_index)){
+        printf("true\n");
+        return true;
+    }
+    printf("false\n");
+    return false;
+}
 
-// int surjective(Main *m, int rel_line_index, int set_A_line_index, int set_B_line_index){
-
-
-
-//     return true;
-// }
-
-// int bijective(Main *m, int rel_line_index, int set_A_line_index, int set_B_line_index){
-//     if(injective(m,rel_line_index,set_A_line_index,set_B_line_index) && surjective(m,rel_line_index,set_A_line_index,set_B_line_index)){
-//         return true;
-//     }
-//     return false;
-// }
 
 /**
- * @brief
- *
- * @param m
- * @param element
- * @param idx
- * @return int
+ * @brief 
+ * 
+ * @param m 
+ * @param func_index 
+ * @param par1 
+ * @param par2 
+ * @param par3 
+ * @return int 
  */
 int function_call(Main *m, int func_index, int par1, int par2, int par3){
     // printf("p1:%d p2:%d p:3%d\n", par1,par2,par3);
@@ -1283,19 +1396,19 @@ int function_call(Main *m, int func_index, int par1, int par2, int par3){
     // printf("func_indx >= 10: %d\n", func_index>=10);
     // printf("(set_1 == -1 || set_2 == -1) : %d\n",(set_1 == -1 || set_2 == -1));
     if (func_index <= 2 && set_1 == -1){
-        fprintf(stderr, "ERROR: wrong line argument!\n");
+        fprintf(stderr, "ERROR: wrong command argument!\n");
         return -1;
     }
     if ((func_index >= 3 && func_index <= 9) && rel_1 == -1){
-        fprintf(stderr, "ERROR: wrong line argument!\n");
+        fprintf(stderr, "ERROR: wrong command argument!\n");
         return -1;
     }
     if((func_index >= 10 && func_index <= 15) && (set_1 == -1 || set_2 == -1)){
-        fprintf(stderr, "ERROR: wrong line argument!\n");
+        fprintf(stderr, "ERROR: wrong command argument!\n");
         return -1;
     }
     if((func_index >= 16 && func_index <= 18) && (rel_1 == -1 || set_2 == -1 || set_3 == -1)){
-        fprintf(stderr, "ERROR: wrong line argument!\n");
+        fprintf(stderr, "ERROR: wrong command argument!\n");
         return -1;
     }
     switch(func_index) {
@@ -1325,7 +1438,12 @@ int function_call(Main *m, int func_index, int par1, int par2, int par3){
             transitive(m,rel_1);
             break;
         case 7 :
-            is_function(m,rel_1);
+            if(is_function(m,rel_1)){
+                printf("true\n");
+            }
+            else{
+                printf("false\n");
+            }
             break;
         case 8 :
             domain(m,rel_1);
@@ -1355,13 +1473,23 @@ int function_call(Main *m, int func_index, int par1, int par2, int par3){
             equals(m,set_1,set_2);
             break;
         case 16 :
-            injective(m, rel_1, set_2, set_3);
+            if(injective(m, rel_1, set_2, set_3)){
+                printf("true\n");
+            }
+            else{
+                printf("false\n");
+            }
             break;
         case 17 :
-            surjective(m,rel_1,set_2,set_3);
+            if(surjective(m,rel_1, set_2, set_3)){
+                printf("true\n");
+            }
+            else{
+                printf("false\n");
+            }
             break;
         case 18 :
-            printf("bijective\n");
+            bijective(m,rel_1,set_2,set_3);
             break;
         default :
             printf("bad func name\n");
@@ -1449,7 +1577,7 @@ int function_parser(FILE *file, Main *m){
 }
 
 /**
- * @brief
+ * @brief Function which prints out the entire universum.
  *
  * @param m
  */
@@ -1467,12 +1595,6 @@ void print_universum(Main *m)
     printf("\n");
 }
 
-/**
- * @brief
- *
- * @param m
- * @return int
- */
 void print_set_old(Main *m){
 
     int uni_index = 0;
@@ -1489,6 +1611,14 @@ void print_set_old(Main *m){
     }
     printf("\n");
 }
+/**
+ * @brief Function which prints out the set.
+ *
+ * @param m represents the main structure.
+ * @param cardinality represents how many elements does the set have.
+ * @param set represents the exact set which is supposed to be printed out.
+ */
+
 
 void print_set(Main *m, int cardinality, int *set){
     printf("S");
@@ -1502,10 +1632,9 @@ void print_set(Main *m, int cardinality, int *set){
 }
 
 /**
- * @brief
+ * @brief Function which prints out the relation
  *
- * @param m
- * @return int
+ * @param m represents the main structure. 
  */
 
 void print_relation(Main *m){
@@ -1530,6 +1659,12 @@ void print_relation(Main *m){
     }
     printf("\n");
 }
+/**
+ * @brief Function which adds a relation to the .
+ *
+ * @param m represents the main structure.
+ * @param line_index.
+ */
 
 int relation_line_add(Main *m, int line_index){
     int line_cardinality = m->r->line_cardinality;
@@ -1589,6 +1724,8 @@ int main(int argc, char *argv[]){
     // printf("argc:%d argv[%d]: %s\n\n",argc,1,argv[1]);
     bool error = false;
     bool uni_loaded = false;
+    bool set_found = false;
+    bool relation_found = false;
     if (argc > 2 || argc == 1){
         fprintf(stderr, "ERROR: Only one input is allowed\n");
         return EXIT_FAILURE;
@@ -1662,6 +1799,7 @@ int main(int argc, char *argv[]){
                 break;
             }
             print_set_old(m);
+            set_found = true;
             (m->s->line_cardinality)++;
         }
         if (return_value == 8){ //empty set
@@ -1669,37 +1807,31 @@ int main(int argc, char *argv[]){
             set_add_element(m, -1, 0);
             print_set_old(m);
             (m->s->line_cardinality)++;
+            set_found = true;
         }
         if (return_value == 4){
             relation_line_add(m, line_index);
             if((relation_to_index(file, m)) == -1){
-                // main_dtor(m, 3);
-                // fclose(file);
-                // return EXIT_FAILURE;
                 error = 1;
                 break;
             }
             if(is_relation(m) == -1){
-                // main_dtor(m,3);
-                // fclose(file);
-                // return EXIT_FAILURE;
                 error = 1;
                 break;
             }
             print_relation(m);
+            relation_found = true;
             (m->r->line_cardinality)++;
         }
         if(return_value == 9){
             relation_line_add(m,line_index);
             relation_add_element(m,-1,true,0);
             print_relation(m);
+            relation_found = true;
             (m->r->line_cardinality)++;
         }
         if (return_value == 5){
             if((function_parser(file, m)) == -1){
-                // main_dtor(m,3);
-                // fclose(file);
-                // return EXIT_FAILURE;
                 error = 1;
                 break;
             }
@@ -1723,7 +1855,15 @@ int main(int argc, char *argv[]){
             error = 1;
             break;
         }
+    } 
+
+    if(!set_found && !relation_found){
+        fprintf(stderr,"ERROR: missing sets/relations");
+        main_dtor(m, 3);
+        fclose(file);
+        return -1;
     }
+
     while(!error){
         return_value = type_check(file);
         // printf("return_value in while 2. : %d\n", return_value);
@@ -1740,6 +1880,12 @@ int main(int argc, char *argv[]){
                 break;
         }
     }
+    main_dtor(m, 3);
+    fclose(file);
+    if(error){
+        return EXIT_FAILURE;
+    }
+    return 0;
     main_dtor(m, 3);
     fclose(file);
     if(error){
